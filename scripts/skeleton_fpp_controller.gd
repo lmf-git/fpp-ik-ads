@@ -3,6 +3,15 @@ class_name SkeletonFPPController
 
 ## Complete FPP controller with Skeleton3D, IK, freelook, and weapon system
 
+# Signals for UI and other systems
+signal weapon_changed(weapon: Weapon)
+signal stance_changed(old_stance: Stance, new_stance: Stance)
+signal ammo_changed(current: int, max: int)
+signal weapon_fired()
+signal weapon_reloaded()
+signal interaction_available(prompt: String)
+signal interaction_unavailable()
+
 # Movement
 @export_group("Movement")
 @export var walk_speed: float = 3.0
@@ -76,6 +85,9 @@ enum Stance {
 }
 
 func _ready():
+	# Add to player group for easy access
+	add_to_group("player")
+
 	if camera:
 		original_camera_position = camera.position
 		camera.fov = hipfire_fov
@@ -159,6 +171,7 @@ func _physics_process(delta):
 	_update_ads(delta)
 	_update_weapon_ik(delta)
 	_update_procedural_effects(delta)
+	_check_interactions()
 
 func _get_movement_speed() -> float:
 	match stance:
@@ -171,6 +184,7 @@ func _get_movement_speed() -> float:
 	return walk_speed
 
 func _cycle_stance():
+	var old_stance = stance
 	match stance:
 		Stance.STANDING:
 			stance = Stance.CROUCHING
@@ -178,6 +192,7 @@ func _cycle_stance():
 			stance = Stance.PRONE
 		Stance.PRONE:
 			stance = Stance.STANDING
+	stance_changed.emit(old_stance, stance)
 
 func _update_body_rotation(delta):
 	if is_freelooking:
@@ -291,6 +306,9 @@ func _pickup_weapon(pickup: WeaponPickup):
 			# Remove pickup from world
 			pickup.queue_free()
 
+			# Emit signal
+			weapon_changed.emit(weapon)
+
 			print("Picked up: ", weapon.weapon_name)
 
 func _drop_weapon():
@@ -317,6 +335,20 @@ func _get_hand_attachment() -> Node3D:
 	# Get the BoneAttachment3D for the right hand
 	# This should be set up in the scene
 	return get_node_or_null("Skeleton3D/RightHandAttachment")
+
+func _check_interactions():
+	"""Check for nearby interactable objects and emit prompts"""
+	if not interaction_ray:
+		return
+
+	if interaction_ray.is_colliding():
+		var collider = interaction_ray.get_collider()
+		if collider is WeaponPickup:
+			interaction_available.emit("[E] Pick up %s" % collider.weapon_name)
+		else:
+			interaction_unavailable.emit()
+	else:
+		interaction_unavailable.emit()
 
 func _process(_delta):
 	# Debug
