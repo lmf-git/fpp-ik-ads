@@ -12,11 +12,17 @@ class_name WeaponPickup
 var time: float = 0.0
 var original_y: float = 0.0
 
+@onready var label: Label3D = $Label3D
+
 func _ready():
 	original_y = position.y
 
 	# Add to interaction group
 	add_to_group("interactable")
+
+	# Update label with weapon name
+	if label:
+		label.text = "[E] %s" % weapon_name
 
 func _process(delta):
 	time += delta
