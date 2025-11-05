@@ -1,0 +1,225 @@
+[gd_scene load_steps=8 format=3 uid="uid://cpk8m3yx2nvts"]
+
+[ext_resource type="Script" path="res://scripts/skeleton_fpp_controller.gd" id="1"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.4, 0.6, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_head"]
+size = Vector3(0.3, 0.3, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+size = Vector3(0.1, 0.4, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hand"]
+size = Vector3(0.12, 0.08, 0.2)
+
+[sub_resource type="Skeleton3D" id="Skeleton3D_1"]
+bones/0/name = "Root"
+bones/0/parent = -1
+bones/0/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+bones/0/enabled = true
+bones/0/position = Vector3(0, 0.9, 0)
+bones/0/rotation = Quaternion(0, 0, 0, 1)
+bones/0/scale = Vector3(1, 1, 1)
+bones/1/name = "Spine"
+bones/1/parent = 0
+bones/1/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+bones/1/enabled = true
+bones/1/position = Vector3(0, 0.3, 0)
+bones/1/rotation = Quaternion(0, 0, 0, 1)
+bones/1/scale = Vector3(1, 1, 1)
+bones/2/name = "Head"
+bones/2/parent = 1
+bones/2/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+bones/2/enabled = true
+bones/2/position = Vector3(0, 0.4, 0)
+bones/2/rotation = Quaternion(0, 0, 0, 1)
+bones/2/scale = Vector3(1, 1, 1)
+bones/3/name = "RightShoulder"
+bones/3/parent = 1
+bones/3/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.3, 0)
+bones/3/enabled = true
+bones/3/position = Vector3(0.3, 0.3, 0)
+bones/3/rotation = Quaternion(0, 0, 0, 1)
+bones/3/scale = Vector3(1, 1, 1)
+bones/4/name = "RightElbow"
+bones/4/parent = 3
+bones/4/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.3, 0)
+bones/4/enabled = true
+bones/4/position = Vector3(0.15, -0.3, 0)
+bones/4/rotation = Quaternion(0, 0, 0, 1)
+bones/4/scale = Vector3(1, 1, 1)
+bones/5/name = "RightHand"
+bones/5/parent = 4
+bones/5/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.3, 0.1)
+bones/5/enabled = true
+bones/5/position = Vector3(0.1, -0.3, 0.1)
+bones/5/rotation = Quaternion(0, 0, 0, 1)
+bones/5/scale = Vector3(1, 1, 1)
+bones/6/name = "LeftShoulder"
+bones/6/parent = 1
+bones/6/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.3, 0)
+bones/6/enabled = true
+bones/6/position = Vector3(-0.3, 0.3, 0)
+bones/6/rotation = Quaternion(0, 0, 0, 1)
+bones/6/scale = Vector3(1, 1, 1)
+bones/7/name = "LeftElbow"
+bones/7/parent = 6
+bones/7/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.3, 0)
+bones/7/enabled = true
+bones/7/position = Vector3(-0.15, -0.3, 0)
+bones/7/rotation = Quaternion(0, 0, 0, 1)
+bones/7/scale = Vector3(1, 1, 1)
+bones/8/name = "LeftHand"
+bones/8/parent = 7
+bones/8/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.3, 0.1)
+bones/8/enabled = true
+bones/8/position = Vector3(-0.1, -0.3, 0.1)
+bones/8/rotation = Quaternion(0, 0, 0, 1)
+bones/8/scale = Vector3(1, 1, 1)
+
+[node name="SkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray")]
+script = ExtResource("1")
+skeleton = NodePath("Skeleton3D")
+right_hand_ik = NodePath("Skeleton3D/RightHandIK")
+left_hand_ik = NodePath("Skeleton3D/LeftHandIK")
+camera = NodePath("Skeleton3D/HeadAttachment/Camera3D")
+interaction_ray = NodePath("Skeleton3D/HeadAttachment/Camera3D/InteractionRay")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="Skeleton3D" type="Skeleton3D" parent="."]
+bones/0/name = "Root"
+bones/0/parent = -1
+bones/0/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+bones/0/enabled = true
+bones/0/position = Vector3(0, 0.9, 0)
+bones/0/rotation = Quaternion(0, 0, 0, 1)
+bones/0/scale = Vector3(1, 1, 1)
+bones/1/name = "Spine"
+bones/1/parent = 0
+bones/1/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+bones/1/enabled = true
+bones/1/position = Vector3(0, 0.3, 0)
+bones/1/rotation = Quaternion(0, 0, 0, 1)
+bones/1/scale = Vector3(1, 1, 1)
+bones/2/name = "Head"
+bones/2/parent = 1
+bones/2/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+bones/2/enabled = true
+bones/2/position = Vector3(0, 0.4, 0)
+bones/2/rotation = Quaternion(0, 0, 0, 1)
+bones/2/scale = Vector3(1, 1, 1)
+bones/3/name = "RightShoulder"
+bones/3/parent = 1
+bones/3/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.3, 0)
+bones/3/enabled = true
+bones/3/position = Vector3(0.3, 0.3, 0)
+bones/3/rotation = Quaternion(0, 0, 0, 1)
+bones/3/scale = Vector3(1, 1, 1)
+bones/4/name = "RightElbow"
+bones/4/parent = 3
+bones/4/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.3, 0)
+bones/4/enabled = true
+bones/4/position = Vector3(0.15, -0.3, 0)
+bones/4/rotation = Quaternion(0, 0, 0, 1)
+bones/4/scale = Vector3(1, 1, 1)
+bones/5/name = "RightHand"
+bones/5/parent = 4
+bones/5/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.3, 0.1)
+bones/5/enabled = true
+bones/5/position = Vector3(0.1, -0.3, 0.1)
+bones/5/rotation = Quaternion(0, 0, 0, 1)
+bones/5/scale = Vector3(1, 1, 1)
+bones/6/name = "LeftShoulder"
+bones/6/parent = 1
+bones/6/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.3, 0)
+bones/6/enabled = true
+bones/6/position = Vector3(-0.3, 0.3, 0)
+bones/6/rotation = Quaternion(0, 0, 0, 1)
+bones/6/scale = Vector3(1, 1, 1)
+bones/7/name = "LeftElbow"
+bones/7/parent = 6
+bones/7/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.3, 0)
+bones/7/enabled = true
+bones/7/position = Vector3(-0.15, -0.3, 0)
+bones/7/rotation = Quaternion(0, 0, 0, 1)
+bones/7/scale = Vector3(1, 1, 1)
+bones/8/name = "LeftHand"
+bones/8/parent = 7
+bones/8/rest = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.3, 0.1)
+bones/8/enabled = true
+bones/8/position = Vector3(-0.1, -0.3, 0.1)
+bones/8/rotation = Quaternion(0, 0, 0, 1)
+bones/8/scale = Vector3(1, 1, 1)
+
+[node name="BodyMesh" type="MeshInstance3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("BoxMesh_body")
+skeleton = NodePath("..")
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("BoxMesh_head")
+skeleton = NodePath("..")
+
+[node name="RightArmMesh" type="MeshInstance3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.3, 0)
+mesh = SubResource("BoxMesh_arm")
+skeleton = NodePath("..")
+
+[node name="RightHandMesh" type="MeshInstance3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.7, 0.1)
+mesh = SubResource("BoxMesh_hand")
+skeleton = NodePath("..")
+
+[node name="LeftArmMesh" type="MeshInstance3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 1.3, 0)
+mesh = SubResource("BoxMesh_arm")
+skeleton = NodePath("..")
+
+[node name="LeftHandMesh" type="MeshInstance3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.7, 0.1)
+mesh = SubResource("BoxMesh_hand")
+skeleton = NodePath("..")
+
+[node name="HeadAttachment" type="BoneAttachment3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+bone_name = "Head"
+bone_idx = 2
+
+[node name="Camera3D" type="Camera3D" parent="Skeleton3D/HeadAttachment"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15)
+
+[node name="InteractionRay" type="RayCast3D" parent="Skeleton3D/HeadAttachment/Camera3D"]
+target_position = Vector3(0, 0, -3)
+collision_mask = 3
+collide_with_areas = true
+
+[node name="RightHandAttachment" type="BoneAttachment3D" parent="Skeleton3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.7, 0.2)
+bone_name = "RightHand"
+bone_idx = 5
+
+[node name="RightHandIK" type="SkeletonIK3D" parent="Skeleton3D"]
+root_bone = "RightShoulder"
+tip_bone = "RightHand"
+interpolation = 0.5
+override_tip_basis = true
+use_magnet = true
+magnet = Vector3(0, -0.2, -0.5)
+
+[node name="LeftHandIK" type="SkeletonIK3D" parent="Skeleton3D"]
+root_bone = "LeftShoulder"
+tip_bone = "LeftHand"
+interpolation = 0.5
+override_tip_basis = true
+use_magnet = true
+magnet = Vector3(0, -0.2, -0.5)

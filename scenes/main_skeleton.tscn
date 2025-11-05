@@ -1,0 +1,126 @@
+[gd_scene load_steps=13 format=3 uid="uid://byn5m8kvx8nwq"]
+
+[ext_resource type="PackedScene" uid="uid://cpk8m3yx2nvts" path="res://scenes/skeleton_player.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://djdxe3yn5w7cp" path="res://scenes/weapon_pickup.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://bqw3h8yx7nvkj" path="res://scenes/weapons/rifle.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://c8vxm2k5yx9nl" path="res://scenes/weapons/pistol.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://d3mplr8vx2okm" path="res://scenes/weapons/smg.tscn" id="5"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.385, 0.454, 0.55, 1)
+sky_horizon_color = Color(0.646, 0.656, 0.67, 1)
+ground_bottom_color = Color(0.2, 0.169, 0.133, 1)
+ground_horizon_color = Color(0.646, 0.656, 0.67, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(100, 0.2, 100)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.4, 0.4, 0.35, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(100, 0.2, 100)
+
+[sub_resource type="BoxMesh" id="BoxMesh_target"]
+size = Vector3(1, 1, 1)
+
+[node name="MainSkeleton" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 0)
+shadow_enabled = true
+shadow_blur = 1.5
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="Player" parent="." instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+
+[node name="WeaponPickups" type="Node3D" parent="."]
+
+[node name="RiflePickup" parent="WeaponPickups" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.2, -8)
+weapon_scene = ExtResource("3")
+weapon_name = "Assault Rifle"
+
+[node name="PistolPickup" parent="WeaponPickups" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.2, -8)
+weapon_scene = ExtResource("4")
+weapon_name = "Pistol"
+
+[node name="SMGPickup" parent="WeaponPickups" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -12)
+weapon_scene = ExtResource("5")
+weapon_name = "SMG"
+
+[node name="RiflePickup2" parent="WeaponPickups" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.2, -15)
+weapon_scene = ExtResource("3")
+weapon_name = "Assault Rifle"
+
+[node name="TargetCubes" type="Node3D" parent="."]
+
+[node name="Target1" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, -20)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target2" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, -20)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target3" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -25)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target4" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.5, -18)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target5" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 1.5, -18)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Wall1" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2, -15)
+use_collision = true
+size = Vector3(1, 4, 10)
+
+[node name="Wall2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2, -15)
+use_collision = true
+size = Vector3(1, 4, 10)
+
+[node name="Platform1" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -30)
+use_collision = true
+size = Vector3(8, 1, 8)
+
+[node name="Instructions" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -5)
+billboard = 1
+text = "FPP IK ADS SYSTEM - FULL FEATURES
+WASD - Move | Mouse - Look | Alt - Freelook
+RMB - ADS | LMB - Fire | R - Reload
+E - Interact | C - Cycle Stance | Shift - Sprint
+Pick up weapons ahead!"
+font_size = 24
