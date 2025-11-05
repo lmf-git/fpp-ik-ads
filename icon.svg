@@ -1,0 +1,10 @@
+<svg width="128" height="128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" fill="#363d52"/>
+  <path d="M64 20 L100 44 L100 84 L64 108 L28 84 L28 44 Z" fill="#4a5a7a" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="64" cy="50" r="8" fill="#ffffff"/>
+  <rect x="54" y="60" width="20" height="35" fill="#ffffff" rx="2"/>
+  <rect x="45" y="70" width="8" height="20" fill="#ffffff" rx="2"/>
+  <rect x="75" y="70" width="8" height="20" fill="#ffffff" rx="2"/>
+  <rect x="75" y="75" width="20" height="4" fill="#ffffff" rx="1"/>
+  <text x="64" y="120" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">FPP IK</text>
+</svg>

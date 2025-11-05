@@ -1,0 +1,152 @@
+[gd_scene load_steps=10 format=3 uid="uid://c3vxbvykqjwqs"]
+
+[ext_resource type="Script" path="res://scripts/fpp_character_controller.gd" id="1"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.385, 0.454, 0.55, 1)
+sky_horizon_color = Color(0.646, 0.656, 0.67, 1)
+ground_bottom_color = Color(0.2, 0.169, 0.133, 1)
+ground_horizon_color = Color(0.646, 0.656, 0.67, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+tonemap_mode = 2
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(50, 0.2, 50)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.4, 0.4, 0.35, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(50, 0.2, 50)
+
+[sub_resource type="BoxMesh" id="BoxMesh_target"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.433, 0.25, 0, 0.5, 0.866, -0.5, -0.75, 0.433, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="Player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("head_path", "camera_path", "spine_path", "right_hand_path", "left_hand_path", "weapon_grip_path", "weapon_support_path", "ads_target_path")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+script = ExtResource("1")
+head_path = NodePath("Body/Spine/Head")
+camera_path = NodePath("Body/Spine/Head/Camera3D")
+spine_path = NodePath("Body/Spine")
+right_hand_path = NodePath("Body/Spine/RightShoulder/RightArm/RightHand")
+left_hand_path = NodePath("Body/Spine/LeftShoulder/LeftArm/LeftHand")
+weapon_grip_path = NodePath("Body/Spine/RightShoulder/RightArm/RightHand/Weapon/GripPoint")
+weapon_support_path = NodePath("Body/Spine/RightShoulder/RightArm/RightHand/Weapon/SupportPoint")
+ads_target_path = NodePath("Body/Spine/RightShoulder/RightArm/RightHand/Weapon/ADSTarget")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="Body" type="Node3D" parent="Player"]
+
+[node name="Torso" type="MeshInstance3D" parent="Player/Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Spine" type="Node3D" parent="Player/Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+
+[node name="Head" type="Node3D" parent="Player/Body/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Player/Body/Spine/Head"]
+mesh = SubResource("BoxMesh_target")
+
+[node name="Camera3D" type="Camera3D" parent="Player/Body/Spine/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15)
+
+[node name="RightShoulder" type="Node3D" parent="Player/Body/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.2, 0)
+
+[node name="RightArm" type="Node3D" parent="Player/Body/Spine/RightShoulder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.3, 0)
+
+[node name="ArmMesh" type="MeshInstance3D" parent="Player/Body/Spine/RightShoulder/RightArm"]
+mesh = SubResource("BoxMesh_target")
+
+[node name="RightHand" type="Node3D" parent="Player/Body/Spine/RightShoulder/RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.35, 0.1)
+
+[node name="HandMesh" type="MeshInstance3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand"]
+transform = Transform3D(0.3, 0, 0, 0, 0.15, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Weapon" type="Node3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand"]
+transform = Transform3D(1, 0, 0, 0, 0.707, -0.707, 0, 0.707, 0.707, 0, -0.1, -0.3)
+
+[node name="WeaponBody" type="MeshInstance3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand/Weapon"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.8, 0, 0, -0.3)
+mesh = SubResource("BoxMesh_target")
+
+[node name="GripPoint" type="Node3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
+
+[node name="SupportPoint" type="Node3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, -0.5)
+
+[node name="ADSTarget" type="Node3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, -0.6)
+
+[node name="SightMesh" type="MeshInstance3D" parent="Player/Body/Spine/RightShoulder/RightArm/RightHand/Weapon/ADSTarget"]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
+mesh = SubResource("BoxMesh_target")
+
+[node name="LeftShoulder" type="Node3D" parent="Player/Body/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.2, 0)
+
+[node name="LeftArm" type="Node3D" parent="Player/Body/Spine/LeftShoulder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.3, 0)
+
+[node name="ArmMesh" type="MeshInstance3D" parent="Player/Body/Spine/LeftShoulder/LeftArm"]
+mesh = SubResource("BoxMesh_target")
+
+[node name="LeftHand" type="Node3D" parent="Player/Body/Spine/LeftShoulder/LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.35, 0.1)
+
+[node name="HandMesh" type="MeshInstance3D" parent="Player/Body/Spine/LeftShoulder/LeftArm/LeftHand"]
+transform = Transform3D(0.3, 0, 0, 0, 0.15, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_target")
+
+[node name="TargetCubes" type="Node3D" parent="."]
+
+[node name="Target1" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -10)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target2" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, -10)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target3" type="MeshInstance3D" parent="TargetCubes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -15)
+mesh = SubResource("BoxMesh_target")
