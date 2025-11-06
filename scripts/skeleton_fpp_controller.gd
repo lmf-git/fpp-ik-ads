@@ -73,6 +73,15 @@ var current_weapon: Weapon = null
 var holstered_weapons: Array[Weapon] = []
 var current_weapon_index: int = 0
 
+# Weapon swap system
+enum WeaponSwapPhase { NONE, LOWERING, SWITCHING, RAISING }
+var weapon_swap_phase: WeaponSwapPhase = WeaponSwapPhase.NONE
+var weapon_swap_progress: float = 0.0
+var weapon_swap_speed: float = 3.0  # How fast weapon lowers/raises
+var pending_weapon_pickup: WeaponPickup = null
+var weapon_swap_offset: Vector3 = Vector3.ZERO  # Current procedural offset
+var weapon_swap_rotation: Vector3 = Vector3.ZERO  # Current procedural rotation
+
 # Bone indices (cached for performance)
 var head_bone_idx: int = -1
 var spine_bone_idx: int = -1
@@ -155,16 +164,17 @@ func _physics_process(delta):
 	if ragdoll and ragdoll.is_ragdoll_active:
 		return
 
-	# Update states
-	is_sprinting = Input.is_action_pressed("sprint") and not is_aiming
-	is_aiming = Input.is_action_pressed("aim_down_sights")
+	# Update states (block during weapon swap)
+	var is_swapping = weapon_swap_phase != WeaponSwapPhase.NONE
+	is_sprinting = Input.is_action_pressed("sprint") and not is_aiming and not is_swapping
+	is_aiming = Input.is_action_pressed("aim_down_sights") and not is_swapping
 	is_freelooking = Input.is_action_pressed("freelook")  # Alt key
 
 	# Stance switching
 	if Input.is_action_just_pressed("crouch"):
 		_cycle_stance()
 
-	# Interaction
+	# Interaction (allow pickup even during swap, but swap system will block it)
 	if Input.is_action_just_pressed("interact"):
 		_try_interact()
 
@@ -214,6 +224,7 @@ func _physics_process(delta):
 	_update_body_rotation(delta)
 	_update_camera_and_head(delta)
 	_update_ads(delta)
+	_update_weapon_swap(delta)  # NEW: Procedural weapon swap
 	_update_weapon_ik(delta)
 	_update_procedural_effects(delta)
 	_check_interactions()
@@ -290,28 +301,139 @@ func _update_ads(delta):
 	if not current_weapon or not camera:
 		return
 
-	# Simplified ADS camera positioning
-	# Move camera slightly forward when aiming to bring eye closer to sight
-	var ads_offset = Vector3(0, -0.05, 0.05)  # Slight down and forward
-	var target_cam_pos = original_camera_position.lerp(original_camera_position + ads_offset, ads_blend)
-	camera.position = camera.position.lerp(target_cam_pos, 10.0 * delta)
+	# ADS: Position weapon so its ADSTarget aligns with camera center
+	if ads_blend > 0.01:
+		var ads_target_node = current_weapon.get_ads_target()
+		if ads_target_node:
+			# Calculate where the weapon should be to align sight with camera
+			var camera_global_pos = camera.global_position
+			var camera_forward = -camera.global_transform.basis.z
+
+			# Get the weapon's current position
+			var weapon_root = current_weapon.get_parent()  # RightHandAttachment
+			if weapon_root:
+				# Calculate offset from weapon root to ADS target
+				var ads_offset_local = current_weapon.transform * ads_target_node.transform
+
+				# Position weapon so ADS target is at camera position
+				var target_weapon_pos = camera_global_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
+
+				# Blend weapon position for smooth ADS
+				var current_pos = weapon_root.global_position
+				weapon_root.global_position = current_pos.lerp(target_weapon_pos, ads_blend)
 
 func _update_weapon_ik(_delta):
 	if not current_weapon or not skeleton:
 		return
 
-	# Update IK targets
+	# Position IK targets at weapon grip points
 	if right_hand_ik:
 		var grip = current_weapon.get_grip_point()
 		if grip:
-			right_hand_ik.target_node = grip.get_path()
-			right_hand_ik.start()
+			# Get or create IK target for right hand
+			var ik_target = _get_or_create_ik_target("RightHandTarget", right_hand_ik)
+			if ik_target:
+				# Position target at weapon grip point
+				ik_target.global_transform = grip.global_transform
+
+				# Make sure IK is using this target
+				if right_hand_ik.target_node != ik_target.get_path():
+					right_hand_ik.target_node = ik_target.get_path()
+					right_hand_ik.start()
 
 	if left_hand_ik:
 		var support = current_weapon.get_support_point()
 		if support:
-			left_hand_ik.target_node = support.get_path()
-			left_hand_ik.start()
+			# Get or create IK target for left hand
+			var ik_target = _get_or_create_ik_target("LeftHandTarget", left_hand_ik)
+			if ik_target:
+				# Position target at weapon support point
+				ik_target.global_transform = support.global_transform
+
+				# Make sure IK is using this target
+				if left_hand_ik.target_node != ik_target.get_path():
+					left_hand_ik.target_node = ik_target.get_path()
+					left_hand_ik.start()
+
+func _get_or_create_ik_target(target_name: String, ik_node: SkeletonIK3D) -> Node3D:
+	"""Get existing IK target or create a new one"""
+	if not skeleton:
+		return null
+
+	# Try to find existing target
+	var existing_target = skeleton.get_node_or_null(target_name)
+	if existing_target:
+		return existing_target
+
+	# Create new target marker
+	var target = Node3D.new()
+	target.name = target_name
+	skeleton.add_child(target)
+	return target
+
+func _update_weapon_swap(delta):
+	"""Handle procedural weapon swap animation"""
+	if weapon_swap_phase == WeaponSwapPhase.NONE:
+		# No swap happening, reset offsets
+		weapon_swap_offset = weapon_swap_offset.lerp(Vector3.ZERO, 10.0 * delta)
+		weapon_swap_rotation = weapon_swap_rotation.lerp(Vector3.ZERO, 10.0 * delta)
+		return
+
+	# Update swap progress
+	weapon_swap_progress += delta * weapon_swap_speed
+
+	match weapon_swap_phase:
+		WeaponSwapPhase.LOWERING:
+			# Lower current weapon down and to the side
+			var target_offset = Vector3(0.3, -0.5, -0.2)  # Right, down, back
+			var target_rotation = Vector3(deg_to_rad(-45), deg_to_rad(30), deg_to_rad(-20))
+
+			weapon_swap_offset = weapon_swap_offset.lerp(target_offset, 8.0 * delta)
+			weapon_swap_rotation = weapon_swap_rotation.lerp(target_rotation, 8.0 * delta)
+
+			# When fully lowered, switch to next phase
+			if weapon_swap_progress >= 1.0:
+				weapon_swap_phase = WeaponSwapPhase.SWITCHING
+				weapon_swap_progress = 0.0
+				_perform_weapon_switch()
+
+		WeaponSwapPhase.SWITCHING:
+			# Weapon is out of view, perform actual switch
+			# Short pause at bottom
+			if weapon_swap_progress >= 0.3:
+				weapon_swap_phase = WeaponSwapPhase.RAISING
+				weapon_swap_progress = 0.0
+
+		WeaponSwapPhase.RAISING:
+			# Raise new weapon into view from bottom
+			var start_offset = Vector3(-0.3, -0.5, -0.2)  # Start from left side
+			var start_rotation = Vector3(deg_to_rad(-45), deg_to_rad(-30), deg_to_rad(20))
+
+			weapon_swap_offset = start_offset.lerp(Vector3.ZERO, weapon_swap_progress)
+			weapon_swap_rotation = start_rotation.lerp(Vector3.ZERO, weapon_swap_progress)
+
+			# When fully raised, complete swap
+			if weapon_swap_progress >= 1.0:
+				weapon_swap_phase = WeaponSwapPhase.NONE
+				weapon_swap_progress = 0.0
+				weapon_swap_offset = Vector3.ZERO
+				weapon_swap_rotation = Vector3.ZERO
+
+	# Apply procedural offset to weapon
+	_apply_weapon_swap_offset()
+
+func _apply_weapon_swap_offset():
+	"""Apply procedural offset to weapon during swap"""
+	if not current_weapon:
+		return
+
+	var weapon_root = current_weapon.get_parent()  # RightHandAttachment
+	if weapon_root:
+		# Apply position offset
+		current_weapon.position = weapon_swap_offset
+
+		# Apply rotation offset
+		current_weapon.rotation = weapon_swap_rotation
 
 func _update_procedural_effects(delta):
 	breathing_time += delta
@@ -329,6 +451,34 @@ func _try_interact():
 		_pickup_weapon(collider)
 
 func _pickup_weapon(pickup: WeaponPickup):
+	"""Start procedural weapon swap animation"""
+	# Don't allow pickup during active swap
+	if weapon_swap_phase != WeaponSwapPhase.NONE:
+		return
+
+	# Store pending pickup for later
+	pending_weapon_pickup = pickup
+
+	# Start weapon swap animation
+	if current_weapon:
+		# Have a weapon, start lowering animation
+		weapon_swap_phase = WeaponSwapPhase.LOWERING
+		weapon_swap_progress = 0.0
+		print("Starting weapon swap: ", current_weapon.weapon_name, " → ", pickup.weapon_name)
+	else:
+		# No weapon, skip lowering and go straight to raising
+		weapon_swap_phase = WeaponSwapPhase.RAISING
+		weapon_swap_progress = 0.0
+		_perform_weapon_switch()
+
+func _perform_weapon_switch():
+	"""Perform actual weapon switch (called during SWITCHING phase)"""
+	if not pending_weapon_pickup:
+		return
+
+	var pickup = pending_weapon_pickup
+	pending_weapon_pickup = null
+
 	# Create weapon instance
 	var weapon = pickup.weapon_scene.instantiate() as Weapon
 
@@ -355,7 +505,7 @@ func _pickup_weapon(pickup: WeaponPickup):
 			# Emit signal
 			weapon_changed.emit(weapon)
 
-			print("Picked up: ", weapon.weapon_name)
+			print("Switched to: ", weapon.weapon_name)
 
 func _drop_weapon():
 	if not current_weapon:
