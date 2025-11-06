@@ -130,7 +130,7 @@ func _update_body_rotation(delta: float) -> void:
 		# Deadzone: head turns before body
 		if abs(third_person_aim_offset) > THIRD_PERSON_TURN_DEADZONE:
 			# Camera exceeded deadzone - body catches up
-			var target_body_yaw := third_person_camera_yaw - sign(third_person_aim_offset) * THIRD_PERSON_TURN_DEADZONE
+			var target_body_yaw: float = third_person_camera_yaw - sign(third_person_aim_offset) * THIRD_PERSON_TURN_DEADZONE
 			body_y_rotation = lerp_angle(
 				body_y_rotation,
 				target_body_yaw,
