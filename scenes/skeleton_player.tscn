@@ -25,22 +25,22 @@ size = Vector3(0.1, 0.4, 0.1)
 size = Vector3(0.12, 0.08, 0.2)
 
 [sub_resource type="CapsuleShape3D" id="PhysicsShape_head"]
-radius = 0.15
-height = 0.3
+radius = 0.08
+height = 0.2
 
 [sub_resource type="BoxShape3D" id="PhysicsShape_spine"]
-size = Vector3(0.4, 0.6, 0.2)
+size = Vector3(0.25, 0.4, 0.15)
 
 [sub_resource type="CapsuleShape3D" id="PhysicsShape_upper_arm"]
-radius = 0.05
-height = 0.3
+radius = 0.03
+height = 0.2
 
 [sub_resource type="CapsuleShape3D" id="PhysicsShape_forearm"]
-radius = 0.04
-height = 0.3
+radius = 0.025
+height = 0.2
 
 [sub_resource type="BoxShape3D" id="PhysicsShape_hand"]
-size = Vector3(0.12, 0.08, 0.2)
+size = Vector3(0.08, 0.06, 0.12)
 
 [node name="SkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray", "ragdoll")]
 physics_material_override = SubResource("PhysicsMaterial_character")

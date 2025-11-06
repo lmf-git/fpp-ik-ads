@@ -1,10 +1,11 @@
-[gd_scene load_steps=14 format=3 uid="uid://byn5m8kvx8nwq"]
+[gd_scene load_steps=15 format=3 uid="uid://byn5m8kvx8nwq"]
 
 [ext_resource type="PackedScene" uid="uid://character_skeleton_fpp" path="res://scenes/character_skeleton_player.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://djdxe3yn5w7cp" path="res://scenes/weapon_pickup.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://bqw3h8yx7nvkj" path="res://scenes/weapons/rifle.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://c8vxm2k5yx9nl" path="res://scenes/weapons/pistol.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://d3mplr8vx2okm" path="res://scenes/weapons/smg.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://controls_hud" path="res://scenes/controls_hud.tscn" id="6"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_floor"]
 friction = 1.0
@@ -121,12 +122,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -30)
 use_collision = true
 size = Vector3(8, 1, 8)
 
-[node name="Instructions" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -5)
-billboard = 1
-text = "FPP IK ADS SYSTEM - FULL FEATURES
-WASD - Move | Mouse - Look | Alt - Freelook
-RMB - ADS | LMB - Fire | R - Reload
-E - Interact | C - Cycle Stance | Shift - Sprint
-Pick up weapons ahead!"
-font_size = 24
+[node name="ControlsHUD" parent="." instance=ExtResource("6")]
