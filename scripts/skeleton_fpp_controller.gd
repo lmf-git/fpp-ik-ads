@@ -164,7 +164,7 @@ func _input(event):
 
 	# Ragdoll controls
 	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_G:
+		if event.keycode == KEY_R:
 			_toggle_ragdoll()
 		elif event.keycode == KEY_H:
 			_test_ragdoll_impulse()
