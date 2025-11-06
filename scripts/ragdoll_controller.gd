@@ -274,22 +274,54 @@ func toggle_partial_ragdoll(limb: String, impulse: Vector3 = Vector3.ZERO):
 		enable_partial_ragdoll(limb, impulse)
 
 func _get_bones_for_limb(limb: String) -> Array:
-	"""Get bone names for a specific limb"""
+	"""Get bone names for a specific limb
+	Supports both simple skeleton and full character model bone names
+	"""
 	match limb:
 		"left_arm":
-			return ["LeftShoulder", "LeftElbow", "LeftHand"]
+			# Try character model bones first, fall back to simple skeleton
+			var char_bones = ["characters3d.com___L_Shoulder", "characters3d.com___L_Upper_Arm",
+							  "characters3d.com___L_Lower_Arm", "characters3d.com___L_Hand"]
+			var simple_bones = ["LeftShoulder", "LeftElbow", "LeftHand"]
+			return _get_existing_bones(char_bones, simple_bones)
 		"right_arm":
-			return ["RightShoulder", "RightElbow", "RightHand"]
+			var char_bones = ["characters3d.com___R_Shoulder", "characters3d.com___R_Upper_Arm",
+							  "characters3d.com___R_Lower_Arm", "characters3d.com___R_Hand"]
+			var simple_bones = ["RightShoulder", "RightElbow", "RightHand"]
+			return _get_existing_bones(char_bones, simple_bones)
 		"left_leg":
-			return ["LeftHip", "LeftKnee", "LeftFoot"]  # If these exist
+			var char_bones = ["characters3d.com___L_Upper_Leg", "characters3d.com___L_Lower_Leg",
+							  "characters3d.com___L_Foot"]
+			var simple_bones = ["LeftHip", "LeftKnee", "LeftFoot"]
+			return _get_existing_bones(char_bones, simple_bones)
 		"right_leg":
-			return ["RightHip", "RightKnee", "RightFoot"]  # If these exist
+			var char_bones = ["characters3d.com___R_Upper_Leg", "characters3d.com___R_Lower_Leg",
+							  "characters3d.com___R_Foot"]
+			var simple_bones = ["RightHip", "RightKnee", "RightFoot"]
+			return _get_existing_bones(char_bones, simple_bones)
 		"torso":
-			return ["Spine"]
+			var char_bones = ["characters3d.com___Spine", "characters3d.com___Chest"]
+			var simple_bones = ["Spine"]
+			return _get_existing_bones(char_bones, simple_bones)
 		"head":
-			return ["Head"]
+			var char_bones = ["characters3d.com___Neck", "characters3d.com___Head"]
+			var simple_bones = ["Head"]
+			return _get_existing_bones(char_bones, simple_bones)
 		_:
 			return []
+
+func _get_existing_bones(char_model_bones: Array, simple_skeleton_bones: Array) -> Array:
+	"""Check which bone set exists in the skeleton and return it"""
+	if not skeleton:
+		return []
+
+	# Check if character model bones exist
+	for bone_name in char_model_bones:
+		if skeleton.find_bone(bone_name) >= 0:
+			return char_model_bones
+
+	# Fall back to simple skeleton bones
+	return simple_skeleton_bones
 
 func _transfer_poses_to_physical_bones(bone_names: Array):
 	"""Transfer current bone poses to physical bones for seamless ragdoll transition"""
