@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://character_skeleton_fpp"]
 
-[ext_resource type="PackedScene" uid="uid://character_model" path="res://character.gltf" id="1"]
+[ext_resource type="PackedScene" uid="uid://hf4c85otcg73" path="res://character.gltf" id="1"]
 [ext_resource type="Script" path="res://scripts/skeleton_fpp_controller.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/ragdoll_controller.gd" id="3"]
 

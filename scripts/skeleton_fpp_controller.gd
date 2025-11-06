@@ -558,10 +558,10 @@ func _test_ragdoll_impulse():
 	if not ragdoll:
 		return
 
-	# Enable ragdoll with forward impulse
-	var impulse = -global_transform.basis.z * 500.0  # Forward direction
+	# Enable ragdoll with gentle forward impulse
+	var impulse = -global_transform.basis.z * 5.0  # Gentle push forward
 	ragdoll.enable_ragdoll(impulse)
-	print("Ragdoll enabled with impulse!")
+	print("Ragdoll enabled with gentle impulse!")
 
 func _toggle_partial_ragdoll(limb: String):
 	"""Toggle partial ragdoll for a specific limb"""
