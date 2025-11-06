@@ -64,6 +64,7 @@ var stance: Stance = Stance.STANDING
 var is_sprinting: bool = false
 var is_aiming: bool = false
 var is_freelooking: bool = false
+var is_third_person: bool = false
 
 # Rotation tracking
 var camera_x_rotation: float = 0.0  # Pitch
@@ -157,6 +158,10 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
 
+	# Camera toggle
+	if event is InputEventKey and event.pressed and event.keycode == KEY_O:
+		_toggle_third_person_camera()
+
 	# Ragdoll controls
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_G:
@@ -172,8 +177,6 @@ func _input(event):
 			_toggle_both_arms_ragdoll()
 		elif event.keycode == KEY_U:
 			_toggle_partial_ragdoll("left_leg")
-		elif event.keycode == KEY_O:
-			_toggle_partial_ragdoll("right_leg")
 
 	# Weapon switching
 	if event is InputEventKey and event.pressed:
@@ -300,6 +303,9 @@ func _update_body_rotation(delta):
 		# Always wrap the offset to prevent camera inversion
 		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
 
+	# Always wrap body rotation to keep it in -PI to PI range
+	body_y_rotation = wrapf(body_y_rotation, -PI, PI)
+
 	# Apply body rotation
 	rotation.y = body_y_rotation
 
@@ -307,13 +313,11 @@ func _update_camera_and_head(_delta):
 	if not camera or not skeleton or head_bone_idx < 0:
 		return
 
-	# Head pitch always follows camera (up/down look)
+	# Head always compensates for difference between camera and body rotation
+	# This ensures camera (attached to head) looks where mouse is pointing
 	# Negate pitch because character.gltf head bone is oriented differently
 	var head_pitch = -camera_x_rotation
-
-	# Head yaw only uses freelook offset when actually freelooking
-	# When not freelooking, head should face forward (no yaw offset)
-	var head_yaw = freelook_offset if is_freelooking else 0.0
+	var head_yaw = freelook_offset  # Always use offset, not just during freelook
 
 	# Apply realistic neck limits to prevent unnatural head rotation
 	# Limit head pitch (up/down)
@@ -325,26 +329,17 @@ func _update_camera_and_head(_delta):
 	var max_yaw_rad = deg_to_rad(neck_max_yaw)
 	head_yaw = clamp(head_yaw, -max_yaw_rad, max_yaw_rad)
 
-	# Only apply head rotation if looking around (not idle with camera centered)
-	# This allows idle animation to play when not actively looking
-	var is_looking_around = abs(head_pitch) > 0.01 or abs(head_yaw) > 0.01
+	# Always apply head rotation to make camera look where it should
+	# Apply pitch and yaw to head bone
+	var head_rotation = Vector3(head_pitch, head_yaw, 0)
+	skeleton.set_bone_pose_rotation(head_bone_idx, Quaternion.from_euler(head_rotation))
 
-	if is_looking_around:
-		# Apply pitch and yaw to head bone
-		var head_rotation = Vector3(head_pitch, head_yaw, 0)
-		skeleton.set_bone_pose_rotation(head_bone_idx, Quaternion.from_euler(head_rotation))
-
-		# Apply partial rotation to spine for more natural look
-		if spine_bone_idx >= 0:
-			var spine_pitch = head_pitch * 0.3
-			var spine_yaw = head_yaw * 0.5
-			skeleton.set_bone_pose_rotation(spine_bone_idx,
-				Quaternion.from_euler(Vector3(spine_pitch, spine_yaw, 0)))
-	else:
-		# Reset to animation pose when idle (allows idle animation to play)
-		skeleton.reset_bone_pose(head_bone_idx)
-		if spine_bone_idx >= 0:
-			skeleton.reset_bone_pose(spine_bone_idx)
+	# Apply partial rotation to spine for more natural look
+	if spine_bone_idx >= 0:
+		var spine_pitch = head_pitch * 0.3
+		var spine_yaw = head_yaw * 0.5
+		skeleton.set_bone_pose_rotation(spine_bone_idx,
+			Quaternion.from_euler(Vector3(spine_pitch, spine_yaw, 0)))
 
 	# Update camera position (attached to head bone in scene tree, but we can offset)
 	# Camera is child of head bone attachment in the scene
@@ -660,23 +655,30 @@ func _toggle_both_arms_ragdoll():
 		print("Both arms ragdoll DISABLED")
 
 func _update_camera_mode():
-	"""Switch between first-person and third-person camera based on ragdoll state"""
-	if not camera or not third_person_camera or not ragdoll:
+	"""Switch between first-person and third-person camera"""
+	if not camera or not third_person_camera:
 		return
 
-	# Switch to third-person when ragdoll is active
-	if ragdoll.is_ragdoll_active:
+	# Switch to third-person when enabled OR when ragdoll is active
+	var should_be_third_person = is_third_person or (ragdoll and ragdoll.is_ragdoll_active)
+
+	if should_be_third_person:
 		if camera.current:
 			camera.current = false
 			third_person_camera.current = true
-			# Position third-person camera behind and above character
-			third_person_camera.global_position = global_position + Vector3(0, 3, 5)
-			third_person_camera.look_at(global_position + Vector3(0, 1, 0), Vector3.UP)
+		# Update third-person camera position every frame to follow character
+		third_person_camera.global_position = global_position + Vector3(0, 3, 5)
+		third_person_camera.look_at(global_position + Vector3(0, 1, 0), Vector3.UP)
 	else:
-		# Switch back to first-person when ragdoll is disabled
+		# Switch back to first-person
 		if third_person_camera.current:
 			third_person_camera.current = false
 			camera.current = true
+
+func _toggle_third_person_camera():
+	"""Toggle between first-person and third-person camera views (O key)"""
+	is_third_person = not is_third_person
+	print("Third person camera: ", "ON" if is_third_person else "OFF")
 
 func _check_interactions():
 	"""Check for nearby interactable objects and emit prompts"""

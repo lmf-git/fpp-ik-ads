@@ -18,6 +18,7 @@
 |-------|--------|
 | **Mouse Movement** | Look around / Rotate camera |
 | **Alt** (Hold) | Freelook - Camera rotates independently of body (up to 120°) |
+| **O** | Toggle Third Person Camera (switch between FPS and third-person view) |
 | **Esc** | Toggle mouse capture (show/hide cursor) |
 
 ## Weapon Controls
@@ -55,8 +56,8 @@ When you pick up a weapon (**E** key):
 
 | Key | Action |
 |-----|--------|
-| **F3** | Toggle Debug Overlay (shows detailed system stats) |
-| **F4** | Toggle IK Visualization (work in progress) |
+| **4** | Toggle Controls HUD (show/hide control instructions) |
+| **5** | Toggle Debug Overlay (shows detailed system stats) |
 
 ## Ragdoll Controls
 
@@ -68,7 +69,6 @@ When you pick up a weapon (**E** key):
 | **K** | Toggle Right Arm Ragdoll (partial ragdoll) |
 | **Y** | Toggle Both Arms Ragdoll (partial ragdoll) |
 | **U** | Toggle Left Leg Ragdoll (partial ragdoll) |
-| **O** | Toggle Right Leg Ragdoll (partial ragdoll) |
 
 ## Stance System
 
@@ -124,7 +124,6 @@ Individual limb control for dynamic mixed animation/physics:
 - **K** - Toggle right arm ragdoll
 - **Y** - Toggle both arms ragdoll
 - **U** - Toggle left leg ragdoll
-- **O** - Toggle right leg ragdoll
 
 **Features:**
 - 8 physical bones: Spine, Head, RightShoulder, RightElbow, RightHand, LeftShoulder, LeftElbow, LeftHand
