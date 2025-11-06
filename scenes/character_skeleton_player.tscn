@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://character_skeleton_fpp"]
+[gd_scene load_steps=6 format=3 uid="uid://character_skeleton_fpp"]
 
 [ext_resource type="PackedScene" uid="uid://hf4c85otcg73" path="res://character.gltf" id="1"]
 [ext_resource type="Script" path="res://scripts/skeleton_fpp_controller.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/ragdoll_controller.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/ik_locomotion.gd" id="4"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_character"]
 friction = 1.0
@@ -13,7 +14,7 @@ bounce = 0.0
 radius = 0.3
 height = 1.8
 
-[node name="CharacterSkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "third_person_camera", "interaction_ray", "ragdoll", "animation_player")]
+[node name="CharacterSkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "third_person_camera", "interaction_ray", "ragdoll", "animation_player", "ik_locomotion")]
 physics_material_override = SubResource("PhysicsMaterial_character")
 script = ExtResource("2")
 floor_stop_on_slope = true
@@ -26,6 +27,7 @@ third_person_camera = NodePath("ThirdPersonCamera")
 interaction_ray = NodePath("CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D/InteractionRay")
 ragdoll = NodePath("RagdollController")
 animation_player = NodePath("CharacterModel/AnimationPlayer")
+ik_locomotion = NodePath("IKLocomotion")
 head_bone_name = "characters3d.com___Head"
 spine_bone_name = "characters3d.com___Spine"
 
@@ -78,5 +80,10 @@ magnet = Vector3(0, -0.2, -0.5)
 
 [node name="RagdollController" type="Node" parent="." node_paths=PackedStringArray("skeleton", "character_body")]
 script = ExtResource("3")
+skeleton = NodePath("../CharacterModel/RootNode/Skeleton3D")
+character_body = NodePath("..")
+
+[node name="IKLocomotion" type="Node" parent="." node_paths=PackedStringArray("skeleton", "character_body")]
+script = ExtResource("4")
 skeleton = NodePath("../CharacterModel/RootNode/Skeleton3D")
 character_body = NodePath("..")
