@@ -26,11 +26,11 @@ func _ready():
 
 func _input(event: InputEvent):
 	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_F1:
+		if event.keycode == KEY_4:
 			show_controls = not show_controls
 			if controls_panel:
 				controls_panel.visible = show_controls
-		elif event.keycode == KEY_F3:
+		elif event.keycode == KEY_5:
 			show_debug = not show_debug
 			if debug_panel:
 				debug_panel.visible = show_debug
@@ -43,7 +43,7 @@ func _update_controls_text():
 	if not controls_label:
 		return
 
-	var text = "[b][color=cyan]CONTROLS[/color][/b] (F1 to toggle)
+	var text = "[b][color=cyan]CONTROLS[/color][/b] (4 to toggle)
 
 [b][color=yellow]Movement[/color][/b]
 WASD - Move
@@ -65,8 +65,8 @@ K - Right arm ragdoll
 Y - Both arms ragdoll
 
 [b][color=yellow]Debug[/color][/b]
-F1 - Toggle controls
-F3 - Toggle debug info
+4 - Toggle controls
+5 - Toggle debug info
 Esc - Mouse capture"
 
 	controls_label.text = text
@@ -75,7 +75,7 @@ func _update_debug_text():
 	if not debug_label or not player:
 		return
 
-	var text = "[b][color=lime]DEBUG INFO[/color][/b] (F3 to toggle)\n\n"
+	var text = "[b][color=lime]DEBUG INFO[/color][/b] (5 to toggle)\n\n"
 
 	# Position
 	text += "[b]Position:[/b] %.1f, %.1f, %.1f\n" % [player.global_position.x, player.global_position.y, player.global_position.z]
