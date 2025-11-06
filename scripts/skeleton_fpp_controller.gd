@@ -290,28 +290,75 @@ func _update_ads(delta):
 	if not current_weapon or not camera:
 		return
 
-	# Simplified ADS camera positioning
-	# Move camera slightly forward when aiming to bring eye closer to sight
-	var ads_offset = Vector3(0, -0.05, 0.05)  # Slight down and forward
-	var target_cam_pos = original_camera_position.lerp(original_camera_position + ads_offset, ads_blend)
-	camera.position = camera.position.lerp(target_cam_pos, 10.0 * delta)
+	# ADS: Position weapon so its ADSTarget aligns with camera center
+	if ads_blend > 0.01:
+		var ads_target_node = current_weapon.get_ads_target()
+		if ads_target_node:
+			# Calculate where the weapon should be to align sight with camera
+			var camera_global_pos = camera.global_position
+			var camera_forward = -camera.global_transform.basis.z
+
+			# Get the weapon's current position
+			var weapon_root = current_weapon.get_parent()  # RightHandAttachment
+			if weapon_root:
+				# Calculate offset from weapon root to ADS target
+				var ads_offset_local = current_weapon.transform * ads_target_node.transform
+
+				# Position weapon so ADS target is at camera position
+				var target_weapon_pos = camera_global_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
+
+				# Blend weapon position for smooth ADS
+				var current_pos = weapon_root.global_position
+				weapon_root.global_position = current_pos.lerp(target_weapon_pos, ads_blend)
 
 func _update_weapon_ik(_delta):
 	if not current_weapon or not skeleton:
 		return
 
-	# Update IK targets
+	# Position IK targets at weapon grip points
 	if right_hand_ik:
 		var grip = current_weapon.get_grip_point()
 		if grip:
-			right_hand_ik.target_node = grip.get_path()
-			right_hand_ik.start()
+			# Get or create IK target for right hand
+			var ik_target = _get_or_create_ik_target("RightHandTarget", right_hand_ik)
+			if ik_target:
+				# Position target at weapon grip point
+				ik_target.global_transform = grip.global_transform
+
+				# Make sure IK is using this target
+				if right_hand_ik.target_node != ik_target.get_path():
+					right_hand_ik.target_node = ik_target.get_path()
+					right_hand_ik.start()
 
 	if left_hand_ik:
 		var support = current_weapon.get_support_point()
 		if support:
-			left_hand_ik.target_node = support.get_path()
-			left_hand_ik.start()
+			# Get or create IK target for left hand
+			var ik_target = _get_or_create_ik_target("LeftHandTarget", left_hand_ik)
+			if ik_target:
+				# Position target at weapon support point
+				ik_target.global_transform = support.global_transform
+
+				# Make sure IK is using this target
+				if left_hand_ik.target_node != ik_target.get_path():
+					left_hand_ik.target_node = ik_target.get_path()
+					left_hand_ik.start()
+
+func _get_or_create_ik_target(target_name: String, ik_node: SkeletonIK3D) -> Node3D:
+	"""Get existing IK target or create a new one"""
+	if not skeleton:
+		return null
+
+	# Try to find existing target
+	var existing_target = skeleton.get_node_or_null(target_name)
+	if existing_target:
+		return existing_target
+
+	# Create new target marker
+	var target = Node3D.new()
+	target.name = target_name
+	skeleton.add_child(target)
+	return target
 
 func _update_procedural_effects(delta):
 	breathing_time += delta
