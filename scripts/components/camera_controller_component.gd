@@ -7,6 +7,12 @@ class_name CameraControllerComponent
 signal freelook_changed(is_freelooking: bool)
 signal camera_mode_changed(is_third_person: bool)
 
+# Constants for spine/head coordination
+const SPINE_PITCH_FOLLOW_RATIO: float = 0.3  # How much spine follows head pitch (30%)
+const SPINE_YAW_FOLLOW_RATIO: float = 0.5    # How much spine follows head yaw (50%)
+const THIRD_PERSON_CAMERA_HEIGHT: float = 3.0  # Height above character
+const THIRD_PERSON_CAMERA_DISTANCE: float = 5.0  # Distance behind character
+
 @export var config: CharacterConfig
 @export var bone_config: BoneConfig
 
@@ -28,9 +34,27 @@ var ads_blend: float = 0.0
 var _head_bone_idx: int = -1
 var _spine_bone_idx: int = -1
 
+# Warning flags (prevent console spam)
+var _warned_skeleton: bool = false
+var _warned_head_bone: bool = false
+
 func _ready() -> void:
-	if not config or not bone_config:
-		push_error("CameraController: Config resources not assigned!")
+	var errors: Array[String] = []
+
+	if not config:
+		errors.append("CharacterConfig resource not assigned - assign in Inspector under 'Config'")
+
+	if not bone_config:
+		errors.append("BoneConfig resource not assigned - assign in Inspector under 'Bone Config'")
+
+	if not skeleton:
+		errors.append("Skeleton3D not found at '../CharacterModel/RootNode/Skeleton3D' - check scene structure")
+
+	if not fps_camera:
+		errors.append("FPS Camera not found - check that camera exists in scene")
+
+	if errors.size() > 0:
+		push_error("CameraController setup failed:\n  - " + "\n  - ".join(errors))
 		return
 
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -38,6 +62,9 @@ func _ready() -> void:
 	# Cache bone indices
 	_head_bone_idx = bone_config.get_bone_index(skeleton, bone_config.head)
 	_spine_bone_idx = bone_config.get_bone_index(skeleton, bone_config.spine)
+
+	if _head_bone_idx < 0:
+		push_warning("CameraController: Head bone not found - head rotation disabled")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -119,8 +146,8 @@ func _update_head_rotation() -> void:
 
 	# Partial rotation to spine for natural look
 	if _spine_bone_idx >= 0:
-		var spine_pitch := head_pitch * 0.3
-		var spine_yaw := head_yaw * 0.5
+		var spine_pitch := head_pitch * SPINE_PITCH_FOLLOW_RATIO
+		var spine_yaw := head_yaw * SPINE_YAW_FOLLOW_RATIO
 		skeleton.set_bone_pose_rotation(_spine_bone_idx, Quaternion.from_euler(Vector3(spine_pitch, spine_yaw, 0)))
 
 ## Update camera mode (FPS vs third-person)
@@ -134,7 +161,7 @@ func _update_camera_mode() -> void:
 			third_person_camera.current = true
 
 		# Position third-person camera behind character
-		var camera_offset := Vector3(0, 3, 5)
+		var camera_offset := Vector3(0, THIRD_PERSON_CAMERA_HEIGHT, THIRD_PERSON_CAMERA_DISTANCE)
 		var rotated_offset := Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation).basis * camera_offset
 		third_person_camera.global_position = character_body.global_position + rotated_offset
 		third_person_camera.look_at(character_body.global_position + Vector3.UP, Vector3.UP)

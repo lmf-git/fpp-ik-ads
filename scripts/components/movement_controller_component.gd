@@ -9,6 +9,10 @@ signal jumped()
 
 enum Stance { STANDING, CROUCHING, PRONE }
 
+# Performance constants
+const VELOCITY_SNAP_THRESHOLD: float = 0.1  # Snap velocities below this to zero
+const STATIC_VELOCITY_THRESHOLD: float = 0.01  # Consider character static below this
+
 @export var config: CharacterConfig
 
 @onready var character_body: CharacterBody3D = get_parent()
@@ -32,6 +36,11 @@ func _ready() -> void:
 		push_error("MovementController: CameraController not found! Movement direction will not work correctly.")
 
 func _physics_process(delta: float) -> void:
+	# Early exit optimization: skip if character is static and no input
+	var is_static := character_body.is_on_floor() and velocity.length_squared() < STATIC_VELOCITY_THRESHOLD
+	if is_static and not _has_input():
+		return  # Save CPU when character is completely still
+
 	# Get input state
 	is_sprinting = Input.is_action_pressed("sprint") and not is_aiming
 	is_aiming = Input.is_action_pressed("aim_down_sights")
@@ -74,8 +83,8 @@ func _physics_process(delta: float) -> void:
 
 	# Snap small velocities to zero
 	if character_body.is_on_floor():
-		if abs(velocity.x) < 0.1: velocity.x = 0.0
-		if abs(velocity.z) < 0.1: velocity.z = 0.0
+		if abs(velocity.x) < VELOCITY_SNAP_THRESHOLD: velocity.x = 0.0
+		if abs(velocity.z) < VELOCITY_SNAP_THRESHOLD: velocity.z = 0.0
 
 	# Apply velocity to CharacterBody3D
 	character_body.velocity = velocity
@@ -120,3 +129,11 @@ func get_is_sprinting() -> bool:
 ## Check if aiming
 func get_is_aiming() -> bool:
 	return is_aiming
+
+## Check if there's any input this frame (for early exit optimization)
+func _has_input() -> bool:
+	return (Input.is_action_pressed("sprint") or
+			Input.is_action_pressed("aim_down_sights") or
+			Input.is_action_just_pressed("crouch") or
+			Input.is_action_just_pressed("jump") or
+			Input.get_vector("move_left", "move_right", "move_forward", "move_back") != Vector2.ZERO)
