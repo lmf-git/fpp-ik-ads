@@ -52,6 +52,7 @@ signal interaction_unavailable()
 @export var interaction_ray: RayCast3D
 @export var ragdoll: RagdollController
 @export var animation_player: AnimationPlayer
+@export var ik_locomotion: IKLocomotion
 
 # ADS
 @export_group("ADS")
@@ -162,6 +163,10 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_O:
 		_toggle_third_person_camera()
 
+	# IK Mode toggle
+	if event is InputEventKey and event.pressed and event.keycode == KEY_M:
+		_toggle_ik_mode()
+
 	# Ragdoll controls
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_R:
@@ -259,6 +264,7 @@ func _physics_process(delta):
 	_update_weapon_swap(delta)  # NEW: Procedural weapon swap
 	_update_weapon_ik(delta)
 	_update_procedural_effects(delta)
+	_update_ik_locomotion(delta)  # NEW: IK-based procedural locomotion
 	_check_interactions()
 
 func _get_movement_speed() -> float:
@@ -667,8 +673,11 @@ func _update_camera_mode():
 		if camera.current:
 			camera.current = false
 			third_person_camera.current = true
-		# Update third-person camera position every frame to follow character
-		third_person_camera.global_position = global_position + Vector3(0, 3, 5)
+		# Update third-person camera position to rotate with character
+		# Use character's body rotation (not camera rotation)
+		var camera_offset = Vector3(0, 3, 5)  # Behind and above
+		var rotated_offset = Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation).basis * camera_offset
+		third_person_camera.global_position = global_position + rotated_offset
 		third_person_camera.look_at(global_position + Vector3(0, 1, 0), Vector3.UP)
 	else:
 		# Switch back to first-person
@@ -680,6 +689,28 @@ func _toggle_third_person_camera():
 	"""Toggle between first-person and third-person camera views (O key)"""
 	is_third_person = not is_third_person
 	print("Third person camera: ", "ON" if is_third_person else "OFF")
+
+func _toggle_ik_mode():
+	"""Toggle IK-based procedural locomotion (M key)"""
+	if not ik_locomotion:
+		print("IK Locomotion system not assigned!")
+		return
+
+	if ik_locomotion.ik_mode_enabled:
+		ik_locomotion.disable_ik_mode()
+	else:
+		ik_locomotion.enable_ik_mode()
+
+func _update_ik_locomotion(delta: float):
+	"""Update IK-based procedural locomotion system"""
+	if not ik_locomotion or not ik_locomotion.ik_mode_enabled:
+		return
+
+	# Get movement state
+	var is_moving = velocity.length() > 0.1
+
+	# Update IK locomotion
+	ik_locomotion.update_locomotion(delta, velocity, is_moving, stance)
 
 func _check_interactions():
 	"""Check for nearby interactable objects and emit prompts"""
