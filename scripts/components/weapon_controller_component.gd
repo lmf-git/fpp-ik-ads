@@ -216,10 +216,10 @@ func update_ads(delta: float, is_aiming: bool) -> void:
 	var weapon_root := current_weapon.get_parent() as Node3D
 	if weapon_root:
 		# Offset from weapon root to ADS target in local space
-		var ads_offset_local := current_weapon.transform * ads_target_node.transform
+		var ads_offset_local: Transform3D = current_weapon.transform * ads_target_node.transform
 
 		# Target position: align ADS point with camera
-		var target_weapon_pos := camera_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
+		var target_weapon_pos: Vector3 = camera_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
 
 		# Blend position smoothly
 		weapon_root.global_position = weapon_root.global_position.lerp(target_weapon_pos, ads_blend)
@@ -229,7 +229,7 @@ func fire_weapon() -> void:
 	if not current_weapon:
 		return
 
-	if current_weapon.has_method("can_fire") and current_weapon.can_fire():
+	if "can_fire" in current_weapon and current_weapon.can_fire:
 		if current_weapon.has_method("fire"):
 			current_weapon.fire()
 			weapon_fired.emit(current_weapon)
@@ -243,7 +243,7 @@ func reload_weapon() -> void:
 	if not current_weapon:
 		return
 
-	if current_weapon.has_method("is_reloading") and not current_weapon.is_reloading():
+	if "is_reloading" in current_weapon and not current_weapon.is_reloading:
 		if current_weapon.has_method("reload"):
 			current_weapon.reload()
 

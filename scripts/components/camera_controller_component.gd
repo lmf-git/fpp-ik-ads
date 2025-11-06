@@ -44,10 +44,6 @@ var third_person_aim_offset: float = 0.0  # How far camera is ahead of body
 var _head_bone_idx: int = -1
 var _spine_bone_idx: int = -1
 
-# Warning flags (prevent console spam)
-var _warned_skeleton: bool = false
-var _warned_head_bone: bool = false
-
 func _ready() -> void:
 	var errors: Array[String] = []
 
