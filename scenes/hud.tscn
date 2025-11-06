@@ -249,7 +249,7 @@ horizontal_alignment = 1
 [node name="Controls" type="Label" parent="ControlHints"]
 layout_mode = 2
 text = "WASD - Move  |  Mouse - Look  |  ALT - Freelook  |  RMB - ADS  |  LMB - Fire
-E - Interact  |  R - Reload  |  C - Stance  |  Shift - Sprint  |  F3 - Debug"
+E - Interact  |  R - Reload  |  C - Stance  |  Shift - Sprint  |  4/5 - HUD Toggle"
 horizontal_alignment = 1
 
 [node name="DamageOverlay" type="ColorRect" parent="."]

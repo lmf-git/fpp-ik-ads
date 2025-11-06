@@ -74,7 +74,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 5)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
 billboard = 1
 text = "FPP IK ADS SYSTEM - COMPLETE DEMO
-Press F3 for Debug Info
+Press 4 for Controls | Press 5 for Debug Info
 Walk forward to explore testing zones"
 font_size = 32
 
@@ -355,7 +355,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0, -30)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
 billboard = 1
 text = "PERFORMANCE TEST
-Press F3 for performance stats
+Press 5 for performance stats
 Multiple weapons and targets
 System handles complexity well"
 font_size = 24

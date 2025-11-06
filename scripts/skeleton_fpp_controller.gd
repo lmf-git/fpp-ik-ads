@@ -31,6 +31,11 @@ signal interaction_unavailable()
 @export var freelook_max_angle: float = 120.0  # How far you can look without body following
 @export var body_rotation_speed: float = 5.0  # How fast body catches up in freelook
 
+@export_group("Neck Limits (Freelook)")
+@export var neck_max_pitch_up: float = 60.0  # Max head tilt up (degrees)
+@export var neck_max_pitch_down: float = 50.0  # Max head tilt down (degrees)
+@export var neck_max_yaw: float = 80.0  # Max head turn left/right (degrees)
+
 # Skeleton and IK
 @export_group("Skeleton & IK")
 @export var skeleton: Skeleton3D
@@ -277,14 +282,28 @@ func _update_camera_and_head(_delta):
 	if not camera or not skeleton or head_bone_idx < 0:
 		return
 
-	# Apply pitch to head bone
-	var head_rotation = Vector3(camera_x_rotation, freelook_offset, 0)
+	# Apply neck limits during freelook
+	var head_pitch = camera_x_rotation
+	var head_yaw = freelook_offset
+
+	if is_freelooking:
+		# Limit head pitch (up/down) to realistic neck angles
+		var max_pitch_up_rad = deg_to_rad(-neck_max_pitch_up)  # Negative because pitch up is negative
+		var max_pitch_down_rad = deg_to_rad(neck_max_pitch_down)
+		head_pitch = clamp(head_pitch, max_pitch_up_rad, max_pitch_down_rad)
+
+		# Limit head yaw (left/right) to realistic neck angles
+		var max_yaw_rad = deg_to_rad(neck_max_yaw)
+		head_yaw = clamp(head_yaw, -max_yaw_rad, max_yaw_rad)
+
+	# Apply pitch and yaw to head bone
+	var head_rotation = Vector3(head_pitch, head_yaw, 0)
 	skeleton.set_bone_pose_rotation(head_bone_idx, Quaternion.from_euler(head_rotation))
 
 	# Apply partial rotation to spine for more natural look
 	if spine_bone_idx >= 0:
-		var spine_pitch = camera_x_rotation * 0.3
-		var spine_yaw = freelook_offset * 0.5
+		var spine_pitch = head_pitch * 0.3
+		var spine_yaw = head_yaw * 0.5
 		skeleton.set_bone_pose_rotation(spine_bone_idx,
 			Quaternion.from_euler(Vector3(spine_pitch, spine_yaw, 0)))
 
