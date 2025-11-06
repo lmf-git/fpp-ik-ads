@@ -1,9 +1,26 @@
-[gd_scene load_steps=3 format=3 uid="uid://bqw3h8yx7nvkj"]
+[gd_scene load_steps=8 format=3 uid="uid://bqw3h8yx7nvkj"]
 
 [ext_resource type="Script" path="res://scripts/weapon.gd" id="1"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_1"]
-size = Vector3(0.1, 0.1, 0.8)
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.08, 0.2, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_barrel"]
+size = Vector3(0.04, 0.04, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_stock"]
+size = Vector3(0.08, 0.12, 0.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_handguard"]
+size = Vector3(0.06, 0.08, 0.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mag"]
+size = Vector3(0.05, 0.18, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rifle"]
+albedo_color = Color(0.15, 0.15, 0.15, 1)
+metallic = 0.7
+roughness = 0.4
 
 [node name="Rifle" type="Node3D" node_paths=PackedStringArray("grip_point", "support_point", "ads_target")]
 script = ExtResource("1")
@@ -16,9 +33,30 @@ fire_rate = 0.1
 magazine_size = 30
 recoil_amount = Vector2(3, 0.8)
 
-[node name="WeaponBody" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.3)
-mesh = SubResource("BoxMesh_1")
+[node name="ReceiverBody" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+mesh = SubResource("BoxMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_rifle")
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, -0.53)
+mesh = SubResource("BoxMesh_barrel")
+surface_material_override/0 = SubResource("StandardMaterial3D_rifle")
+
+[node name="Stock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.17)
+mesh = SubResource("BoxMesh_stock")
+surface_material_override/0 = SubResource("StandardMaterial3D_rifle")
+
+[node name="Handguard" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, -0.38)
+mesh = SubResource("BoxMesh_handguard")
+surface_material_override/0 = SubResource("StandardMaterial3D_rifle")
+
+[node name="Magazine" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.19, -0.12)
+mesh = SubResource("BoxMesh_mag")
+surface_material_override/0 = SubResource("StandardMaterial3D_rifle")
 
 [node name="GripPoint" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
