@@ -75,6 +75,7 @@ func _connect_signals() -> void:
 	if movement_controller:
 		movement_controller.stance_changed.connect(_on_stance_changed)
 		movement_controller.jumped.connect(_on_jumped)
+		movement_controller.prone_state_changed.connect(_on_prone_state_changed)
 
 	# Camera signals
 	if camera_controller:
@@ -261,6 +262,19 @@ func _on_ragdoll_disabled() -> void:
 	# Re-enable systems after ragdoll
 	if movement_controller:
 		movement_controller.process_mode = Node.PROCESS_MODE_INHERIT
+
+	# MGSV-style: Play procedural get-up animation from ragdoll
+	if ik_locomotion and ik_mode_enabled:
+		ik_locomotion.play_get_up_animation()
+		print("Character: Getting up from ragdoll")
+
+func _on_prone_state_changed(is_supine: bool) -> void:
+	# Update IK for prone-back (supine) vs prone-stomach transitions
+	if is_supine:
+		print("Character: Prone state -> SUPINE (on back)")
+	else:
+		print("Character: Prone state -> STOMACH")
+	# IK system will handle the transition automatically based on stance
 
 func _on_weapon_changed(new_weapon: Weapon, old_weapon: Weapon) -> void:
 	# Update current weapon reference
