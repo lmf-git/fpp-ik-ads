@@ -303,6 +303,9 @@ func _update_body_rotation(delta):
 		# Always wrap the offset to prevent camera inversion
 		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
 
+	# Always wrap body rotation to keep it in -PI to PI range
+	body_y_rotation = wrapf(body_y_rotation, -PI, PI)
+
 	# Apply body rotation
 	rotation.y = body_y_rotation
 
