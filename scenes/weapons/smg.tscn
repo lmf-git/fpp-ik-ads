@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3 uid="uid://d3mplr8vx2okm"]
+
+[ext_resource type="Script" path="res://scripts/weapon.gd" id="1"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(0.08, 0.08, 0.5)
+
+[node name="SMG" type="Node3D" node_paths=PackedStringArray("grip_point", "support_point", "ads_target")]
+script = ExtResource("1")
+weapon_name = "SMG"
+weapon_type = 2
+grip_point = NodePath("GripPoint")
+support_point = NodePath("SupportPoint")
+ads_target = NodePath("ADSTarget")
+damage = 20.0
+fire_rate = 0.08
+magazine_size = 25
+recoil_amount = Vector2(2.5, 1.2)
+
+[node name="WeaponBody" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+mesh = SubResource("BoxMesh_1")
+
+[node name="GripPoint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.12)
+
+[node name="SupportPoint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -0.35)
+
+[node name="ADSTarget" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, -0.42)
+
+[node name="SightMesh" type="MeshInstance3D" parent="ADSTarget"]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)
+mesh = SubResource("BoxMesh_1")

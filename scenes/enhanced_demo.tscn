@@ -1,0 +1,393 @@
+[gd_scene load_steps=15 format=3 uid="uid://cxkvn7yx5nw9r"]
+
+[ext_resource type="PackedScene" uid="uid://cpk8m3yx2nvts" path="res://scenes/skeleton_player.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://djdxe3yn5w7cp" path="res://scenes/weapon_pickup.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://bqw3h8yx7nvkj" path="res://scenes/weapons/rifle.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://c8vxm2k5yx9nl" path="res://scenes/weapons/pistol.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://d3mplr8vx2okm" path="res://scenes/weapons/smg.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://cmxvk8yx3nwts" path="res://scenes/hud.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://bxkvm9yx4nwqp" path="res://scenes/debug_overlay.tscn" id="7"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.385, 0.454, 0.55, 1)
+sky_horizon_color = Color(0.646, 0.656, 0.67, 1)
+ground_bottom_color = Color(0.2, 0.169, 0.133, 1)
+ground_horizon_color = Color(0.646, 0.656, 0.67, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(150, 0.2, 150)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.4, 0.4, 0.35, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(150, 0.2, 150)
+
+[sub_resource type="BoxMesh" id="BoxMesh_target"]
+size = Vector3(1, 1, 1)
+
+[node name="EnhancedDemo" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 15, 0)
+shadow_enabled = true
+shadow_blur = 1.5
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="Player" parent="." instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 5)
+
+[node name="HUD" parent="." instance=ExtResource("6")]
+
+[node name="DebugOverlay" parent="." instance=ExtResource("7")]
+
+[node name="StartArea" type="Node3D" parent="."]
+
+[node name="WelcomeSign" type="Label3D" parent="StartArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+billboard = 1
+text = "FPP IK ADS SYSTEM - COMPLETE DEMO
+Press F3 for Debug Info
+Walk forward to explore testing zones"
+font_size = 32
+
+[node name="ControlsSign" type="Label3D" parent="StartArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.5, 3)
+billboard = 1
+text = "WASD - Move
+Mouse - Look
+Alt - Freelook
+RMB - ADS
+LMB - Fire
+E - Interact
+R - Reload
+C - Cycle Stance
+Shift - Sprint
+Space - Jump"
+font_size = 20
+
+[node name="ZonesSign" type="Label3D" parent="StartArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.5, 3)
+billboard = 1
+text = "TESTING ZONES:
+→ Shooting Range (forward)
+← Freelook Zone (left)
+→ IK Testing (right)
+↓ Movement Course (back-right)"
+font_size = 20
+
+[node name="ShootingRange" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
+
+[node name="RangeSign" type="Label3D" parent="ShootingRange"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 5)
+billboard = 1
+text = "SHOOTING RANGE
+Test ADS, accuracy, and weapon handling
+Pick up weapons and test them on targets"
+font_size = 24
+
+[node name="WeaponTable" type="CSGBox3D" parent="ShootingRange"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 8)
+use_collision = true
+size = Vector3(8, 1, 2)
+
+[node name="RiflePickup" parent="ShootingRange" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.3, 8)
+weapon_scene = ExtResource("3")
+weapon_name = "Assault Rifle"
+
+[node name="PistolPickup" parent="ShootingRange" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 8)
+weapon_scene = ExtResource("4")
+weapon_name = "Pistol"
+
+[node name="SMGPickup" parent="ShootingRange" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.3, 8)
+weapon_scene = ExtResource("5")
+weapon_name = "SMG"
+
+[node name="Targets" type="Node3D" parent="ShootingRange"]
+
+[node name="Target10m" type="MeshInstance3D" parent="ShootingRange/Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -10)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Label" type="Label3D" parent="ShootingRange/Targets/Target10m"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+billboard = 1
+text = "10m"
+font_size = 20
+
+[node name="Target25m" type="MeshInstance3D" parent="ShootingRange/Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -25)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Label" type="Label3D" parent="ShootingRange/Targets/Target25m"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+billboard = 1
+text = "25m"
+font_size = 20
+
+[node name="Target50m" type="MeshInstance3D" parent="ShootingRange/Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, -50)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Label" type="Label3D" parent="ShootingRange/Targets/Target50m"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+billboard = 1
+text = "50m"
+font_size = 20
+
+[node name="MovingTarget" type="MeshInstance3D" parent="ShootingRange/Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -35)
+mesh = SubResource("BoxMesh_target")
+
+[node name="FreelookZone" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0, 0)
+
+[node name="FreelookSign" type="Label3D" parent="FreelookZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+billboard = 1
+text = "FREELOOK TESTING ZONE
+Hold ALT and look around
+Notice how your body stays facing forward
+Watch the freelook angle indicator at top of screen"
+font_size = 24
+
+[node name="AngleMarkers" type="Node3D" parent="FreelookZone"]
+
+[node name="Center" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -10)
+billboard = 1
+text = "0° CENTER"
+font_size = 32
+
+[node name="Left45" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -7, 2, -7)
+billboard = 1
+text = "45° LEFT"
+font_size = 28
+
+[node name="Right45" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 7, 2, -7)
+billboard = 1
+text = "45° RIGHT"
+font_size = 28
+
+[node name="Left90" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -10, 2, 0)
+billboard = 1
+text = "90° LEFT"
+font_size = 28
+
+[node name="Right90" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 10, 2, 0)
+billboard = 1
+text = "90° RIGHT"
+font_size = 28
+
+[node name="Left120" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(-0.5, 0, 0.866025, 0, 1, 0, -0.866025, 0, -0.5, -8.66, 2, 5)
+billboard = 1
+text = "120° LEFT (MAX)"
+font_size = 28
+
+[node name="Right120" type="Label3D" parent="FreelookZone/AngleMarkers"]
+transform = Transform3D(-0.5, 0, -0.866025, 0, 1, 0, 0.866025, 0, -0.5, 8.66, 2, 5)
+billboard = 1
+text = "120° RIGHT (MAX)"
+font_size = 28
+
+[node name="Platform" type="CSGBox3D" parent="FreelookZone"]
+use_collision = true
+size = Vector3(25, 0.5, 25)
+
+[node name="IKTestingZone" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
+
+[node name="IKSign" type="Label3D" parent="IKTestingZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+billboard = 1
+text = "IK TESTING ZONE
+Look at yourself in the mirrors
+Watch hands stay attached to weapon
+Try aiming and moving - IK adapts!
+Press F4 for IK visualization (WIP)"
+font_size = 24
+
+[node name="Mirror1" type="CSGBox3D" parent="IKTestingZone"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -8, 2, 0)
+use_collision = true
+size = Vector3(12, 4, 0.2)
+
+[node name="MirrorLabel" type="Label3D" parent="IKTestingZone/Mirror1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0.2)
+billboard = 1
+text = "MIRROR
+(Reflections need ReflectionProbe)"
+font_size = 16
+
+[node name="Mirror2" type="CSGBox3D" parent="IKTestingZone"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 8, 2, 0)
+use_collision = true
+size = Vector3(12, 4, 0.2)
+
+[node name="WeaponDisplay" type="Node3D" parent="IKTestingZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+
+[node name="Pedestal1" type="CSGCylinder3D" parent="IKTestingZone/WeaponDisplay"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 0)
+use_collision = true
+radius = 0.8
+
+[node name="RiflePickup" parent="IKTestingZone/WeaponDisplay/Pedestal1" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+weapon_scene = ExtResource("3")
+weapon_name = "Rifle"
+
+[node name="Pedestal2" type="CSGCylinder3D" parent="IKTestingZone/WeaponDisplay"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+use_collision = true
+radius = 0.8
+
+[node name="PistolPickup" parent="IKTestingZone/WeaponDisplay/Pedestal2" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+weapon_scene = ExtResource("4")
+weapon_name = "Pistol"
+
+[node name="Pedestal3" type="CSGCylinder3D" parent="IKTestingZone/WeaponDisplay"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 0)
+use_collision = true
+radius = 0.8
+
+[node name="SMGPickup" parent="IKTestingZone/WeaponDisplay/Pedestal3" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+weapon_scene = ExtResource("5")
+weapon_name = "SMG"
+
+[node name="MovementCourse" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 25)
+
+[node name="CourseSign" type="Label3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+billboard = 1
+text = "MOVEMENT COURSE
+Test stances, sprint, jump
+Navigate obstacles
+C - Cycle stance
+Shift - Sprint"
+font_size = 24
+
+[node name="Stairs" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.25, -5)
+use_collision = true
+size = Vector3(3, 0.5, 1)
+
+[node name="Stairs2" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.75, -6)
+use_collision = true
+size = Vector3(3, 1.5, 1)
+
+[node name="Stairs3" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.25, -7)
+use_collision = true
+size = Vector3(3, 2.5, 1)
+
+[node name="Platform1" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -10)
+use_collision = true
+size = Vector3(4, 2, 4)
+
+[node name="Platform2" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -15)
+use_collision = true
+size = Vector3(4, 4, 4)
+
+[node name="Ramp" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, -0.5, 0, 1, 0, 0.5, 0, 1, 10, 1, -8)
+use_collision = true
+size = Vector3(3, 0.5, 8)
+
+[node name="Wall1" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 0)
+use_collision = true
+size = Vector3(0.5, 2, 10)
+
+[node name="Wall2" type="CSGBox3D" parent="MovementCourse"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, 0)
+use_collision = true
+size = Vector3(0.5, 2, 10)
+
+[node name="PerformanceTestZone" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0, -30)
+
+[node name="PerfSign" type="Label3D" parent="PerformanceTestZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+billboard = 1
+text = "PERFORMANCE TEST
+Press F3 for performance stats
+Multiple weapons and targets
+System handles complexity well"
+font_size = 24
+
+[node name="WeaponPile" type="Node3D" parent="PerformanceTestZone"]
+
+[node name="Rifle1" parent="PerformanceTestZone/WeaponPile" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.2, -5)
+weapon_scene = ExtResource("3")
+weapon_name = "Rifle"
+
+[node name="Rifle2" parent="PerformanceTestZone/WeaponPile" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -5)
+weapon_scene = ExtResource("3")
+weapon_name = "Rifle"
+
+[node name="Rifle3" parent="PerformanceTestZone/WeaponPile" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.2, -5)
+weapon_scene = ExtResource("3")
+weapon_name = "Rifle"
+
+[node name="TargetGrid" type="Node3D" parent="PerformanceTestZone"]
+
+[node name="Target1" type="MeshInstance3D" parent="PerformanceTestZone/TargetGrid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2, -20)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target2" type="MeshInstance3D" parent="PerformanceTestZone/TargetGrid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2, -20)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target3" type="MeshInstance3D" parent="PerformanceTestZone/TargetGrid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -20)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target4" type="MeshInstance3D" parent="PerformanceTestZone/TargetGrid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2, -20)
+mesh = SubResource("BoxMesh_target")
+
+[node name="Target5" type="MeshInstance3D" parent="PerformanceTestZone/TargetGrid"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2, -20)
+mesh = SubResource("BoxMesh_target")

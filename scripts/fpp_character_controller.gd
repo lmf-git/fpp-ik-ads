@@ -159,7 +159,7 @@ func _physics_process(delta):
 	_update_weapon_ik(delta)
 	_update_procedural_movement(delta)
 
-func _update_camera_and_head(delta):
+func _update_camera_and_head(_delta):
 	if not head or not camera:
 		return
 
@@ -235,11 +235,6 @@ func _update_procedural_movement(delta):
 	sway_time += delta
 	breathing_time += delta
 
-	# Calculate sway based on mouse movement
-	var mouse_velocity = Vector2.ZERO
-	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		mouse_velocity = Vector2(camera_y_rotation, camera_x_rotation)
-
 	# Breathing sway (subtle sine wave)
 	var breathing_offset = Vector3(
 		sin(breathing_time * breathing_speed) * breathing_amount,
@@ -277,4 +272,7 @@ func _process(_delta):
 	if Input.is_action_just_pressed("ui_accept"):
 		print("ADS Blend: ", ads_blend)
 		print("Is Aiming: ", is_aiming)
-		print("Camera FOV: ", camera.fov if camera else "N/A")
+		if camera:
+			print("Camera FOV: ", camera.fov)
+		else:
+			print("Camera FOV: N/A")
