@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://d3mplr8vx2okm"]
+[gd_scene load_steps=8 format=3 uid="uid://d3mplr8vx2okm"]
 
 [ext_resource type="Script" path="res://scripts/weapon.gd" id="1"]
 
@@ -18,6 +18,9 @@ size = Vector3(0.06, 0.06, 0.15)
 albedo_color = Color(0.1, 0.1, 0.12, 1)
 metallic = 0.75
 roughness = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_sight"]
+size = Vector3(0.015, 0.015, 0.015)
 
 [node name="SMG" type="Node3D" node_paths=PackedStringArray("grip_point", "support_point", "ads_target")]
 script = ExtResource("1")
@@ -61,5 +64,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -0.35)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, -0.42)
 
 [node name="SightMesh" type="MeshInstance3D" parent="ADSTarget"]
-transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)
-mesh = SubResource("BoxMesh_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_sight")
+surface_material_override/0 = SubResource("StandardMaterial3D_smg")

@@ -145,7 +145,6 @@ magnet = Vector3(0, -0.2, -0.5)
 
 [node name="PhysicalBoneSpine" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "Spine"
-simulate_physics = false
 mass = 25.0
 friction = 0.8
 bounce = 0.1
@@ -156,7 +155,6 @@ shape = SubResource("PhysicsShape_spine")
 
 [node name="PhysicalBoneHead" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "Head"
-simulate_physics = false
 mass = 4.5
 friction = 0.8
 bounce = 0.1
@@ -167,7 +165,6 @@ shape = SubResource("PhysicsShape_head")
 
 [node name="PhysicalBoneRightShoulder" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "RightShoulder"
-simulate_physics = false
 mass = 2.0
 friction = 0.8
 bounce = 0.1
@@ -178,7 +175,6 @@ shape = SubResource("PhysicsShape_upper_arm")
 
 [node name="PhysicalBoneRightElbow" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "RightElbow"
-simulate_physics = false
 mass = 1.5
 friction = 0.8
 bounce = 0.1
@@ -189,7 +185,6 @@ shape = SubResource("PhysicsShape_forearm")
 
 [node name="PhysicalBoneRightHand" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "RightHand"
-simulate_physics = false
 mass = 0.4
 friction = 0.8
 bounce = 0.1
@@ -200,7 +195,6 @@ shape = SubResource("PhysicsShape_hand")
 
 [node name="PhysicalBoneLeftShoulder" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "LeftShoulder"
-simulate_physics = false
 mass = 2.0
 friction = 0.8
 bounce = 0.1
@@ -211,7 +205,6 @@ shape = SubResource("PhysicsShape_upper_arm")
 
 [node name="PhysicalBoneLeftElbow" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "LeftElbow"
-simulate_physics = false
 mass = 1.5
 friction = 0.8
 bounce = 0.1
@@ -222,7 +215,6 @@ shape = SubResource("PhysicsShape_forearm")
 
 [node name="PhysicalBoneLeftHand" type="PhysicalBone3D" parent="Skeleton3D"]
 bone_name = "LeftHand"
-simulate_physics = false
 mass = 0.4
 friction = 0.8
 bounce = 0.1

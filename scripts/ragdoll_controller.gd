@@ -37,8 +37,7 @@ func _find_physical_bones():
 func _configure_physical_bone(bone: PhysicalBone3D):
 	"""Configure a physical bone's physics properties"""
 	# Set mass based on bone (approximate human body part masses)
-	var bone_name = bone.get_bone_name()
-	var mass = _get_bone_mass(bone_name) * ragdoll_mass_scale
+	var mass = _get_bone_mass(bone.bone_name) * ragdoll_mass_scale
 	bone.mass = mass
 
 	# Set physics material properties
@@ -74,12 +73,13 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO):
 		character_body.collision_layer = 0
 		character_body.collision_mask = 0
 
-	# Enable all physical bones
-	for bone in physical_bones:
-		bone.simulate_physics = true
+	# Enable all physical bones using Skeleton3D
+	if skeleton:
+		skeleton.physical_bones_start_simulation()
 
-		# Apply impulse if specified (e.g., from damage direction)
-		if impulse.length() > 0:
+	# Apply impulse if specified (e.g., from damage direction)
+	if impulse.length() > 0:
+		for bone in physical_bones:
 			bone.apply_central_impulse(impulse)
 
 	print("Ragdoll enabled with %d physical bones" % physical_bones.size())
@@ -103,20 +103,20 @@ func disable_ragdoll():
 
 func _disable_ragdoll():
 	"""Internal method to disable all physical bones"""
-	for bone in physical_bones:
-		bone.simulate_physics = false
+	if skeleton:
+		skeleton.physical_bones_stop_simulation()
 
 func apply_force_to_bone(bone_name: String, force: Vector3):
 	"""Apply force to a specific bone (e.g., hit reaction)"""
 	for bone in physical_bones:
-		if bone.get_bone_name() == bone_name:
+		if bone.bone_name == bone_name:
 			bone.apply_central_force(force)
 			return
 
 func apply_impulse_to_bone(bone_name: String, impulse: Vector3):
 	"""Apply impulse to a specific bone (e.g., bullet hit)"""
 	for bone in physical_bones:
-		if bone.get_bone_name() == bone_name:
+		if bone.bone_name == bone_name:
 			bone.apply_central_impulse(impulse)
 			return
 
