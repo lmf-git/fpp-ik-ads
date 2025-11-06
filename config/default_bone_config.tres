@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="BoneConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/bone_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+head = &"characters3d.com___Head"
+neck = &"characters3d.com___Neck"
+spine = &"characters3d.com___Spine"
+spine1 = &"characters3d.com___Spine1"
+spine2 = &"characters3d.com___Spine2"
+hips = &"characters3d.com___Hips"
+l_shoulder = &"characters3d.com___L_Shoulder"
+l_upper_arm = &"characters3d.com___L_Upper_Arm"
+l_lower_arm = &"characters3d.com___L_Lower_Arm"
+l_hand = &"characters3d.com___L_Hand"
+r_shoulder = &"characters3d.com___R_Shoulder"
+r_upper_arm = &"characters3d.com___R_Upper_Arm"
+r_lower_arm = &"characters3d.com___R_Lower_Arm"
+r_hand = &"characters3d.com___R_Hand"
+l_upper_leg = &"characters3d.com___L_Upper_Leg"
+l_lower_leg = &"characters3d.com___L_Lower_Leg"
+l_foot = &"characters3d.com___L_Foot"
+r_upper_leg = &"characters3d.com___R_Upper_Leg"
+r_lower_leg = &"characters3d.com___R_Lower_Leg"
+r_foot = &"characters3d.com___R_Foot"
