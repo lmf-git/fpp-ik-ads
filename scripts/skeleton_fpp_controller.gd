@@ -246,14 +246,11 @@ func _update_ads(delta):
 	if not current_weapon or not camera:
 		return
 
-	# Align weapon sight with camera center
-	var ads_target = current_weapon.get_ads_target()
-	if ads_target and ads_blend > 0.01:
-		var sight_local = camera.to_local(ads_target.global_position)
-		var target_cam_pos = original_camera_position - (sight_local * ads_blend)
-		camera.position = camera.position.lerp(target_cam_pos, 10.0 * delta)
-	else:
-		camera.position = camera.position.lerp(original_camera_position, 10.0 * delta)
+	# Simplified ADS camera positioning
+	# Move camera slightly forward when aiming to bring eye closer to sight
+	var ads_offset = Vector3(0, -0.05, 0.05)  # Slight down and forward
+	var target_cam_pos = original_camera_position.lerp(original_camera_position + ads_offset, ads_blend)
+	camera.position = camera.position.lerp(target_cam_pos, 10.0 * delta)
 
 func _update_weapon_ik(_delta):
 	if not current_weapon or not skeleton:
@@ -302,6 +299,9 @@ func _pickup_weapon(pickup: WeaponPickup):
 			hand_attachment.add_child(weapon)
 			current_weapon = weapon
 
+			# Store source scene for dropping later
+			weapon.source_scene = pickup.weapon_scene
+
 			# Setup IK
 			_update_weapon_ik(0)
 
@@ -317,10 +317,18 @@ func _drop_weapon():
 	if not current_weapon:
 		return
 
+	# Only drop if we have the source scene
+	if not current_weapon.source_scene:
+		print("Warning: Cannot drop weapon without source_scene")
+		current_weapon.queue_free()
+		current_weapon = null
+		return
+
 	# Create pickup in world
 	var pickup_scene = preload("res://scenes/weapon_pickup.tscn")
 	var pickup = pickup_scene.instantiate() as WeaponPickup
-	pickup.weapon_scene = current_weapon.scene_file_path
+	pickup.weapon_scene = current_weapon.source_scene
+	pickup.weapon_name = current_weapon.weapon_name
 	pickup.global_position = global_position + global_transform.basis.z * -1.0
 	get_tree().root.add_child(pickup)
 
