@@ -1,9 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://c8vxm2k5yx9nl"]
+[gd_scene load_steps=6 format=3 uid="uid://c8vxm2k5yx9nl"]
 
 [ext_resource type="Script" path="res://scripts/weapon.gd" id="1"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_1"]
-size = Vector3(0.08, 0.1, 0.3)
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.05, 0.15, 0.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_barrel"]
+size = Vector3(0.03, 0.03, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_slide"]
+size = Vector3(0.05, 0.08, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pistol"]
+albedo_color = Color(0.2, 0.2, 0.2, 1)
+metallic = 0.8
+roughness = 0.3
 
 [node name="Pistol" type="Node3D" node_paths=PackedStringArray("grip_point", "support_point", "ads_target")]
 script = ExtResource("1")
@@ -18,8 +29,19 @@ magazine_size = 15
 recoil_amount = Vector2(4, 1)
 
 [node name="WeaponBody" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.12)
-mesh = SubResource("BoxMesh_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.08)
+mesh = SubResource("BoxMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_pistol")
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, -0.23)
+mesh = SubResource("BoxMesh_barrel")
+surface_material_override/0 = SubResource("StandardMaterial3D_pistol")
+
+[node name="Slide" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, -0.1)
+mesh = SubResource("BoxMesh_slide")
+surface_material_override/0 = SubResource("StandardMaterial3D_pistol")
 
 [node name="GripPoint" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.08)
