@@ -188,7 +188,12 @@ func _input(event):
 			_switch_weapon(2)
 
 func _physics_process(delta):
-	# Skip normal physics if ragdolled
+	# Allow interaction even during ragdoll (but skip movement/physics)
+	# Interaction (allow pickup even during swap, but swap system will block it)
+	if Input.is_action_just_pressed("interact"):
+		_try_interact()
+
+	# Skip normal physics if fully ragdolled
 	if ragdoll and ragdoll.is_ragdoll_active:
 		return
 
@@ -201,10 +206,6 @@ func _physics_process(delta):
 	# Stance switching
 	if Input.is_action_just_pressed("crouch"):
 		_cycle_stance()
-
-	# Interaction (allow pickup even during swap, but swap system will block it)
-	if Input.is_action_just_pressed("interact"):
-		_try_interact()
 
 	# Gravity
 	if not is_on_floor():
