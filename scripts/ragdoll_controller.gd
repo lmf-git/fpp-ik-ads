@@ -99,7 +99,7 @@ func _auto_generate_physical_bones():
 
 	print("Auto-generated ", created_count, " PhysicalBone3D nodes")
 
-func _create_physical_bone(bone_idx: int, bone_name: String):
+func _create_physical_bone(_bone_idx: int, bone_name: String):
 	"""Create a PhysicalBone3D node for the specified bone"""
 	var physical_bone = PhysicalBone3D.new()
 	physical_bone.name = "PhysicalBone_" + bone_name.replace("characters3d.com___", "")

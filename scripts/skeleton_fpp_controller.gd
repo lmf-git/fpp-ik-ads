@@ -114,6 +114,15 @@ func _ready():
 		head_bone_idx = skeleton.find_bone(head_bone_name)
 		spine_bone_idx = skeleton.find_bone(spine_bone_name)
 
+		print("Skeleton found: ", skeleton.name)
+		print("Total bones: ", skeleton.get_bone_count())
+		print("Head bone index: ", head_bone_idx, " (", head_bone_name, ")")
+		print("Spine bone index: ", spine_bone_idx, " (", spine_bone_name, ")")
+
+		# Check if mesh is present
+		for child in skeleton.get_children():
+			print("Skeleton child: ", child.name, " - Type: ", child.get_class())
+
 		# Reset skeleton to rest pose to ensure bones start at correct positions
 		skeleton.reset_bone_poses()
 
@@ -283,21 +292,21 @@ func _update_camera_and_head(_delta):
 	if not camera or not skeleton or head_bone_idx < 0:
 		return
 
-	# Apply neck limits during freelook
+	# Head always rotates with camera (pitch) and freelook offset (yaw)
 	var head_pitch = camera_x_rotation
 	var head_yaw = freelook_offset
 
-	if is_freelooking:
-		# Limit head pitch (up/down) to realistic neck angles
-		var max_pitch_up_rad = deg_to_rad(-neck_max_pitch_up)  # Negative because pitch up is negative
-		var max_pitch_down_rad = deg_to_rad(neck_max_pitch_down)
-		head_pitch = clamp(head_pitch, max_pitch_up_rad, max_pitch_down_rad)
+	# Apply realistic neck limits to prevent unnatural head rotation
+	# Limit head pitch (up/down)
+	var max_pitch_up_rad = deg_to_rad(-neck_max_pitch_up)  # Negative because pitch up is negative
+	var max_pitch_down_rad = deg_to_rad(neck_max_pitch_down)
+	head_pitch = clamp(head_pitch, max_pitch_up_rad, max_pitch_down_rad)
 
-		# Limit head yaw (left/right) to realistic neck angles
-		var max_yaw_rad = deg_to_rad(neck_max_yaw)
-		head_yaw = clamp(head_yaw, -max_yaw_rad, max_yaw_rad)
+	# Limit head yaw (left/right) - this controls how far head can turn
+	var max_yaw_rad = deg_to_rad(neck_max_yaw)
+	head_yaw = clamp(head_yaw, -max_yaw_rad, max_yaw_rad)
 
-	# Apply pitch and yaw to head bone
+	# Apply pitch and yaw to head bone (head always follows camera/freelook)
 	var head_rotation = Vector3(head_pitch, head_yaw, 0)
 	skeleton.set_bone_pose_rotation(head_bone_idx, Quaternion.from_euler(head_rotation))
 
@@ -538,12 +547,13 @@ func _drop_weapon():
 		return
 
 	# Create pickup in world
-	var pickup_scene = preload("res://scenes/weapon_pickup.tscn")
-	var pickup = pickup_scene.instantiate() as WeaponPickup
-	pickup.weapon_scene = current_weapon.source_scene
-	pickup.weapon_name = current_weapon.weapon_name
-	pickup.global_position = global_position + global_transform.basis.z * -1.0
-	get_tree().root.add_child(pickup)
+	if is_inside_tree():
+		var pickup_scene = preload("res://scenes/weapon_pickup.tscn")
+		var pickup = pickup_scene.instantiate() as WeaponPickup
+		pickup.weapon_scene = current_weapon.source_scene
+		pickup.weapon_name = current_weapon.weapon_name
+		pickup.global_position = global_position + global_transform.basis.z * -1.0
+		get_tree().root.add_child(pickup)
 
 	# Remove weapon
 	current_weapon.queue_free()
