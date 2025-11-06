@@ -177,8 +177,10 @@ func _physics_process(delta):
 		velocity.x = direction.x * speed
 		velocity.z = direction.z * speed
 	else:
-		velocity.x = move_toward(velocity.x, 0, speed * delta * 10)
-		velocity.z = move_toward(velocity.z, 0, speed * delta * 10)
+		# Strong deceleration for immediate stopping
+		var deceleration = 50.0  # Much higher for snappy stopping
+		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
+		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
 
 	move_and_slide()
 
@@ -191,6 +193,10 @@ func _physics_process(delta):
 	_check_interactions()
 
 func _get_movement_speed() -> float:
+	# Reduce speed significantly when aiming
+	if is_aiming:
+		return crouch_speed * 0.8  # Slow walk when aiming
+
 	match stance:
 		Stance.STANDING:
 			return sprint_speed if is_sprinting else walk_speed
