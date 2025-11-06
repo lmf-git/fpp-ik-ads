@@ -50,6 +50,7 @@ signal interaction_unavailable()
 @export var camera: Camera3D
 @export var interaction_ray: RayCast3D
 @export var ragdoll: RagdollController
+@export var animation_player: AnimationPlayer
 
 # ADS
 @export_group("ADS")
@@ -125,6 +126,15 @@ func _ready():
 
 		# Reset skeleton to rest pose to ensure bones start at correct positions
 		skeleton.reset_bone_poses()
+
+	# Start idle animation if available
+	if animation_player:
+		if animation_player.has_animation("www.characters3d.com | Idle"):
+			animation_player.play("www.characters3d.com | Idle")
+			print("Playing Idle animation")
+		else:
+			print("No Idle animation found in AnimationPlayer")
+			print("Available animations:", animation_player.get_animation_list())
 
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
