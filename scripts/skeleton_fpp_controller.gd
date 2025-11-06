@@ -177,8 +177,8 @@ func _physics_process(delta):
 		velocity.x = direction.x * speed
 		velocity.z = direction.z * speed
 	else:
-		# Use fixed deceleration instead of speed-based for better stopping
-		var deceleration = 20.0  # Higher = faster stopping
+		# Strong deceleration for immediate stopping
+		var deceleration = 50.0  # Much higher for snappy stopping
 		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
 
