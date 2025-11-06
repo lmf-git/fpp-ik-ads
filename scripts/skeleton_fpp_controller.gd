@@ -129,8 +129,8 @@ func _ready():
 
 	# Start idle animation if available
 	if animation_player:
-		if animation_player.has_animation("www.characters3d.com | Idle"):
-			animation_player.play("www.characters3d.com | Idle")
+		if animation_player.has_animation("www_characters3d_com | Idle"):
+			animation_player.play("www_characters3d_com | Idle")
 			print("Playing Idle animation")
 		else:
 			print("No Idle animation found in AnimationPlayer")
@@ -304,14 +304,15 @@ func _update_camera_and_head(_delta):
 		return
 
 	# Head always rotates with camera (pitch) and freelook offset (yaw)
-	var head_pitch = camera_x_rotation
+	# Negate pitch because character.gltf head bone is oriented differently
+	var head_pitch = -camera_x_rotation
 	var head_yaw = freelook_offset
 
 	# Apply realistic neck limits to prevent unnatural head rotation
 	# Limit head pitch (up/down)
-	var max_pitch_up_rad = deg_to_rad(-neck_max_pitch_up)  # Negative because pitch up is negative
-	var max_pitch_down_rad = deg_to_rad(neck_max_pitch_down)
-	head_pitch = clamp(head_pitch, max_pitch_up_rad, max_pitch_down_rad)
+	var max_pitch_up_rad = deg_to_rad(neck_max_pitch_up)  # Positive now because we negated
+	var max_pitch_down_rad = deg_to_rad(-neck_max_pitch_down)  # Negative now
+	head_pitch = clamp(head_pitch, max_pitch_down_rad, max_pitch_up_rad)
 
 	# Limit head yaw (left/right) - this controls how far head can turn
 	var max_yaw_rad = deg_to_rad(neck_max_yaw)
