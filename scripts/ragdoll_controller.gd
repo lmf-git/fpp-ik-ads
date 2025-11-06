@@ -213,15 +213,22 @@ func disable_partial_ragdoll(limb: String):
 
 	print("Disabling partial ragdoll for ", limb)
 
-	# Stop physics simulation for specific bones
-	if skeleton:
-		skeleton.physical_bones_stop_simulation(bone_names)
-
-	# Disable collision for these bones
+	# Disable collision for these bones and reset their poses
 	for bone in physical_bones:
 		if bone.bone_name in bone_names:
 			bone.collision_layer = 0
 			bone.collision_mask = 0
+			# Reset velocities
+			bone.linear_velocity = Vector3.ZERO
+			bone.angular_velocity = Vector3.ZERO
+
+	# Reset bone poses to animation-driven for these specific bones
+	if skeleton:
+		for bone_name in bone_names:
+			var bone_idx = skeleton.find_bone(bone_name)
+			if bone_idx >= 0:
+				# Clear any physics override by resetting to rest
+				skeleton.reset_bone_pose(bone_idx)
 
 	# Update state
 	match limb:
@@ -237,6 +244,11 @@ func disable_partial_ragdoll(limb: String):
 			torso_ragdoll_active = false
 		"head":
 			head_ragdoll_active = false
+
+	# If no partial ragdolls are active, stop physics simulation entirely
+	if not is_any_partial_ragdoll_active() and skeleton:
+		skeleton.physical_bones_stop_simulation()
+		print("All partial ragdolls disabled - stopped physics simulation")
 
 func toggle_partial_ragdoll(limb: String, impulse: Vector3 = Vector3.ZERO):
 	"""Toggle ragdoll physics for a specific limb"""
