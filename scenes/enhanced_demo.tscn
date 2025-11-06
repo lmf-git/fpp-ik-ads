@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cxkvn7yx5nw9r"]
+[gd_scene load_steps=17 format=3 uid="uid://cxkvn7yx5nw9r"]
 
 [ext_resource type="PackedScene" uid="uid://character_skeleton_fpp" path="res://scenes/character_skeleton_player.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://djdxe3yn5w7cp" path="res://scenes/weapon_pickup.tscn" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://d3mplr8vx2okm" path="res://scenes/weapons/smg.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://cmxvk8yx3nwts" path="res://scenes/hud.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://bxkvm9yx4nwqp" path="res://scenes/debug_overlay.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://controls_hud" path="res://scenes/controls_hud.tscn" id="8"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.385, 0.454, 0.55, 1)
@@ -67,6 +68,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 5)
 [node name="HUD" parent="." instance=ExtResource("6")]
 
 [node name="DebugOverlay" parent="." instance=ExtResource("7")]
+
+[node name="ControlsHUD" parent="." instance=ExtResource("8")]
 
 [node name="StartArea" type="Node3D" parent="."]
 

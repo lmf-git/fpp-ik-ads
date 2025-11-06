@@ -39,7 +39,7 @@ bone_name = "characters3d.com___Head"
 bone_idx = 7
 
 [node name="Camera3D" type="Camera3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.1, 0)
 
 [node name="InteractionRay" type="RayCast3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D"]
 target_position = Vector3(0, 0, -3)
