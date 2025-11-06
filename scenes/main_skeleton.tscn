@@ -1,10 +1,15 @@
-[gd_scene load_steps=13 format=3 uid="uid://byn5m8kvx8nwq"]
+[gd_scene load_steps=14 format=3 uid="uid://byn5m8kvx8nwq"]
 
 [ext_resource type="PackedScene" uid="uid://cpk8m3yx2nvts" path="res://scenes/skeleton_player.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://djdxe3yn5w7cp" path="res://scenes/weapon_pickup.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://bqw3h8yx7nvkj" path="res://scenes/weapons/rifle.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://c8vxm2k5yx9nl" path="res://scenes/weapons/pistol.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://d3mplr8vx2okm" path="res://scenes/weapons/smg.tscn" id="5"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_floor"]
+friction = 1.0
+rough = true
+bounce = 0.0
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.385, 0.454, 0.55, 1)
@@ -45,6 +50,7 @@ shadow_enabled = true
 shadow_blur = 1.5
 
 [node name="Ground" type="StaticBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_floor")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
 mesh = SubResource("BoxMesh_ground")
