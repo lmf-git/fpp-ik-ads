@@ -173,14 +173,26 @@ func _physics_process(delta):
 	var movement_basis = Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation)
 	var direction = (movement_basis.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
-	if direction:
-		velocity.x = direction.x * speed
-		velocity.z = direction.z * speed
+	# Use acceleration instead of instant velocity for smooth movement
+	var acceleration = 80.0  # Fast acceleration
+	var deceleration = 100.0  # Very strong deceleration for instant stopping
+
+	if direction and is_on_floor():
+		# Accelerate towards target speed
+		var target_velocity = direction * speed
+		velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
+		velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
 	else:
-		# Strong deceleration for immediate stopping
-		var deceleration = 50.0  # Much higher for snappy stopping
+		# Decelerate to stop
 		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
+
+	# Snap very small velocities to zero to prevent micro-sliding
+	var velocity_threshold = 0.01
+	if abs(velocity.x) < velocity_threshold:
+		velocity.x = 0
+	if abs(velocity.z) < velocity_threshold:
+		velocity.z = 0
 
 	move_and_slide()
 
