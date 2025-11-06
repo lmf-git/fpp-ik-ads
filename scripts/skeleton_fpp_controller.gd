@@ -29,7 +29,7 @@ signal interaction_unavailable()
 @export var max_look_up: float = 80.0
 @export var max_look_down: float = 80.0
 @export var freelook_max_angle: float = 120.0  # How far you can look without body following
-@export var body_rotation_speed: float = 5.0  # How fast body catches up in freelook
+@export var body_rotation_speed: float = 3.0  # How fast body catches up when not in freelook
 
 @export_group("Neck Limits (Freelook)")
 @export var neck_max_pitch_up: float = 60.0  # Max head tilt up (degrees)
@@ -271,7 +271,7 @@ func _cycle_stance():
 func _update_body_rotation(delta):
 	if is_freelooking:
 		# In freelook: camera rotates independently, head follows within neck limits
-		# Calculate offset between camera and body
+		# Calculate offset between camera and body (always wrap for proper angle handling)
 		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
 
 		# Body starts turning when camera exceeds neck limit (so head stays within natural range)
@@ -281,9 +281,10 @@ func _update_body_rotation(delta):
 			body_y_rotation = camera_y_rotation - sign(freelook_offset) * max_neck_yaw_rad
 			freelook_offset = sign(freelook_offset) * max_neck_yaw_rad
 	else:
-		# Normal mode: body follows camera immediately
+		# Normal mode: body follows camera smoothly
 		body_y_rotation = lerp_angle(body_y_rotation, camera_y_rotation, body_rotation_speed * delta)
-		freelook_offset = camera_y_rotation - body_y_rotation
+		# Always wrap the offset to prevent camera inversion
+		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
 
 	# Apply body rotation
 	rotation.y = body_y_rotation
@@ -638,10 +639,11 @@ func _process(_delta):
 	# Debug
 	if Input.is_action_just_pressed("ui_accept"):
 		print("=== FPP Debug ===")
-		print("Freelook: ", is_freelooking)
-		print("Camera Yaw: ", rad_to_deg(camera_y_rotation))
-		print("Body Yaw: ", rad_to_deg(body_y_rotation))
-		print("Freelook Offset: ", rad_to_deg(freelook_offset))
+		print("Freelook: ", is_freelooking, " (Hold Alt to enable)")
+		print("Camera Yaw: ", "%.1f°" % rad_to_deg(camera_y_rotation))
+		print("Body Yaw: ", "%.1f°" % rad_to_deg(body_y_rotation))
+		print("Freelook Offset: ", "%.1f°" % rad_to_deg(freelook_offset), " (head yaw)")
+		print("Head visible turn: ", "%.1f°" % clamp(rad_to_deg(freelook_offset), -neck_max_yaw, neck_max_yaw))
 		print("ADS Blend: ", ads_blend)
 		print("Stance: ", stance)
 		if current_weapon:
