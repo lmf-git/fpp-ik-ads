@@ -37,8 +37,7 @@ func _find_physical_bones():
 func _configure_physical_bone(bone: PhysicalBone3D):
 	"""Configure a physical bone's physics properties"""
 	# Set mass based on bone (approximate human body part masses)
-	var bone_name = bone.get_bone_name()
-	var mass = _get_bone_mass(bone_name) * ragdoll_mass_scale
+	var mass = _get_bone_mass(bone.bone_name) * ragdoll_mass_scale
 	bone.mass = mass
 
 	# Set physics material properties
@@ -109,14 +108,14 @@ func _disable_ragdoll():
 func apply_force_to_bone(bone_name: String, force: Vector3):
 	"""Apply force to a specific bone (e.g., hit reaction)"""
 	for bone in physical_bones:
-		if bone.get_bone_name() == bone_name:
+		if bone.bone_name == bone_name:
 			bone.apply_central_force(force)
 			return
 
 func apply_impulse_to_bone(bone_name: String, impulse: Vector3):
 	"""Apply impulse to a specific bone (e.g., bullet hit)"""
 	for bone in physical_bones:
-		if bone.get_bone_name() == bone_name:
+		if bone.bone_name == bone_name:
 			bone.apply_central_impulse(impulse)
 			return
 
