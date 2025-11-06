@@ -13,6 +13,12 @@ const SPINE_YAW_FOLLOW_RATIO: float = 0.5    # How much spine follows head yaw (
 const THIRD_PERSON_CAMERA_HEIGHT: float = 3.0  # Height above character
 const THIRD_PERSON_CAMERA_DISTANCE: float = 5.0  # Distance behind character
 
+# Third-person camera lag/sway constants
+const THIRD_PERSON_TURN_DEADZONE: float = 0.15  # Radians (~8.5°) - head turns before body
+const THIRD_PERSON_CAMERA_LAG: float = 4.0  # How fast camera catches up (lower = more lag)
+const THIRD_PERSON_HEAD_TURN_SPEED: float = 8.0  # How fast head aims before body follows
+const THIRD_PERSON_BODY_CATCH_UP: float = 2.5  # How fast body catches up to camera
+
 @export var config: CharacterConfig
 @export var bone_config: BoneConfig
 
@@ -23,12 +29,16 @@ const THIRD_PERSON_CAMERA_DISTANCE: float = 5.0  # Distance behind character
 
 # State
 var camera_x_rotation: float = 0.0  # Pitch
-var camera_y_rotation: float = 0.0  # Yaw
+var camera_y_rotation: float = 0.0  # Yaw (input target)
 var body_y_rotation: float = 0.0    # Body's rotation
 var freelook_offset: float = 0.0
 var is_freelooking: bool = false
 var is_third_person: bool = false
 var ads_blend: float = 0.0
+
+# Third-person camera lag state
+var third_person_camera_yaw: float = 0.0  # Actual camera yaw (lags behind input)
+var third_person_aim_offset: float = 0.0  # How far camera is ahead of body
 
 # Cached bone indices
 var _head_bone_idx: int = -1
@@ -104,7 +114,36 @@ func _update_body_rotation(delta: float) -> void:
 	if was_freelooking != is_freelooking:
 		freelook_changed.emit(is_freelooking)
 
-	if is_freelooking:
+	# === THIRD-PERSON MODE: Camera lag with deadzone ===
+	if is_third_person:
+		# Camera smoothly lags behind input
+		third_person_camera_yaw = lerp_angle(
+			third_person_camera_yaw,
+			camera_y_rotation,
+			THIRD_PERSON_CAMERA_LAG * delta
+		)
+		third_person_camera_yaw = wrapf(third_person_camera_yaw, -PI, PI)
+
+		# Calculate how far camera is ahead of body
+		third_person_aim_offset = wrapf(third_person_camera_yaw - body_y_rotation, -PI, PI)
+
+		# Deadzone: head turns before body
+		if abs(third_person_aim_offset) > THIRD_PERSON_TURN_DEADZONE:
+			# Camera exceeded deadzone - body catches up
+			var target_body_yaw := third_person_camera_yaw - sign(third_person_aim_offset) * THIRD_PERSON_TURN_DEADZONE
+			body_y_rotation = lerp_angle(
+				body_y_rotation,
+				target_body_yaw,
+				THIRD_PERSON_BODY_CATCH_UP * delta
+			)
+			# Update offset after body movement
+			third_person_aim_offset = wrapf(third_person_camera_yaw - body_y_rotation, -PI, PI)
+
+		# Freelook offset is how far head turns within deadzone
+		freelook_offset = third_person_aim_offset
+
+	# === FIRST-PERSON MODE: Original behavior ===
+	elif is_freelooking:
 		# Freelook: camera rotates independently
 		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
 
@@ -160,9 +199,10 @@ func _update_camera_mode() -> void:
 			fps_camera.current = false
 			third_person_camera.current = true
 
-		# Position third-person camera behind character
+		# Position third-person camera behind character using lagged yaw
+		# This creates smooth camera lag as the camera catches up to input
 		var camera_offset := Vector3(0, THIRD_PERSON_CAMERA_HEIGHT, THIRD_PERSON_CAMERA_DISTANCE)
-		var rotated_offset := Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation).basis * camera_offset
+		var rotated_offset := Transform3D.IDENTITY.rotated(Vector3.UP, third_person_camera_yaw).basis * camera_offset
 		third_person_camera.global_position = character_body.global_position + rotated_offset
 		third_person_camera.look_at(character_body.global_position + Vector3.UP, Vector3.UP)
 	else:
@@ -181,6 +221,12 @@ func update_ads(delta: float, is_aiming: bool) -> void:
 ## Toggle between first and third person
 func toggle_camera_mode() -> void:
 	is_third_person = not is_third_person
+
+	# Initialize third-person camera yaw to current body rotation to avoid jump
+	if is_third_person:
+		third_person_camera_yaw = body_y_rotation
+		third_person_aim_offset = 0.0
+
 	camera_mode_changed.emit(is_third_person)
 	print("Camera mode: ", "Third Person" if is_third_person else "First Person")
 
