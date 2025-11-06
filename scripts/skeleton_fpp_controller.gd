@@ -6,11 +6,13 @@ class_name SkeletonFPPController
 # Signals for UI and other systems
 signal weapon_changed(weapon: Weapon)
 signal stance_changed(old_stance: Stance, new_stance: Stance)
-signal ammo_changed(current: int, max: int)
-signal weapon_fired()
-signal weapon_reloaded()
 signal interaction_available(prompt: String)
 signal interaction_unavailable()
+
+# Future signals - ready for implementation
+#signal ammo_changed(current: int, max: int)  # TODO: Emit when ammo changes
+#signal weapon_fired()  # TODO: Emit from weapon.gd
+#signal weapon_reloaded()  # TODO: Emit from weapon.gd
 
 # Movement
 @export_group("Movement")
@@ -96,6 +98,9 @@ func _ready():
 	if skeleton:
 		head_bone_idx = skeleton.find_bone(head_bone_name)
 		spine_bone_idx = skeleton.find_bone(spine_bone_name)
+
+		# Reset skeleton to rest pose to ensure bones start at correct positions
+		skeleton.reset_bone_poses()
 
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -213,12 +218,9 @@ func _update_body_rotation(delta):
 	# Apply body rotation
 	rotation.y = body_y_rotation
 
-func _update_camera_and_head(delta):
+func _update_camera_and_head(_delta):
 	if not camera or not skeleton or head_bone_idx < 0:
 		return
-
-	# Get head bone transform
-	var head_pose = skeleton.get_bone_pose(head_bone_idx)
 
 	# Apply pitch to head bone
 	var head_rotation = Vector3(camera_x_rotation, freelook_offset, 0)
@@ -253,7 +255,7 @@ func _update_ads(delta):
 	else:
 		camera.position = camera.position.lerp(original_camera_position, 10.0 * delta)
 
-func _update_weapon_ik(delta):
+func _update_weapon_ik(_delta):
 	if not current_weapon or not skeleton:
 		return
 
