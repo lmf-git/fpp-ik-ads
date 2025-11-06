@@ -26,11 +26,30 @@
 |-------|--------|
 | **Left Mouse Button** | Fire weapon |
 | **Right Mouse Button** (Hold) | Aim Down Sights (ADS) - Zooms FOV and aligns sight |
-| **E** | Interact / Pick up weapon |
+| **E** | Interact / Pick up weapon (triggers procedural swap animation) |
 | **R** | Reload (feature ready, not yet implemented) |
 | **1** | Switch to weapon slot 1 |
 | **2** | Switch to weapon slot 2 |
 | **3** | Switch to weapon slot 3 |
+
+### Procedural Weapon Swap System
+
+When you pick up a weapon (**E** key):
+- **Lowering Phase**: Current weapon smoothly lowers down and to the right (0.33s)
+- **Switching Phase**: Weapon is out of view, actual switch happens (0.1s pause)
+- **Raising Phase**: New weapon raises up from the left side into view (0.33s)
+- **Total Duration**: ~0.75 seconds for complete swap
+
+**During Weapon Swap:**
+- Cannot fire or aim
+- Cannot sprint
+- Can still move and look around
+- Cannot start another weapon swap
+
+**Animation Details:**
+- Lower: Rotates -45° pitch, +30° yaw, -20° roll + moves right/down/back
+- Raise: Starts from left side with opposite rotation, smoothly centers
+- All transitions use smooth lerp interpolation for fluid motion
 
 ## Debug & UI Controls
 
