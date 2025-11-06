@@ -48,6 +48,7 @@ signal interaction_unavailable()
 # Camera nodes
 @export_group("References")
 @export var camera: Camera3D
+@export var third_person_camera: Camera3D
 @export var interaction_ray: RayCast3D
 @export var ragdoll: RagdollController
 @export var animation_player: AnimationPlayer
@@ -243,6 +244,9 @@ func _physics_process(delta):
 			velocity.z = 0
 
 	move_and_slide()
+
+	# Update camera mode based on ragdoll state
+	_update_camera_mode()
 
 	# Update systems
 	_update_body_rotation(delta)
@@ -627,6 +631,25 @@ func _toggle_both_arms_ragdoll():
 		ragdoll.disable_partial_ragdoll("left_arm")
 		ragdoll.disable_partial_ragdoll("right_arm")
 		print("Both arms ragdoll DISABLED")
+
+func _update_camera_mode():
+	"""Switch between first-person and third-person camera based on ragdoll state"""
+	if not camera or not third_person_camera or not ragdoll:
+		return
+
+	# Switch to third-person when ragdoll is active
+	if ragdoll.is_ragdoll_active:
+		if camera.current:
+			camera.current = false
+			third_person_camera.current = true
+			# Position third-person camera behind and above character
+			third_person_camera.global_position = global_position + Vector3(0, 3, 5)
+			third_person_camera.look_at(global_position + Vector3(0, 1, 0), Vector3.UP)
+	else:
+		# Switch back to first-person when ragdoll is disabled
+		if third_person_camera.current:
+			third_person_camera.current = false
+			camera.current = true
 
 func _check_interactions():
 	"""Check for nearby interactable objects and emit prompts"""
