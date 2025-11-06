@@ -38,8 +38,18 @@
 |-----|--------|
 | **F3** | Toggle Debug Overlay (shows detailed system stats) |
 | **F4** | Toggle IK Visualization (work in progress) |
-| **G** | Toggle Ragdoll (enable/disable physics ragdoll) |
+
+## Ragdoll Controls
+
+| Key | Action |
+|-----|--------|
+| **G** | Toggle Full Body Ragdoll (enable/disable physics ragdoll) |
 | **H** | Test Ragdoll with Impulse (ragdoll with forward force) |
+| **J** | Toggle Left Arm Ragdoll (partial ragdoll) |
+| **K** | Toggle Right Arm Ragdoll (partial ragdoll) |
+| **Y** | Toggle Both Arms Ragdoll (partial ragdoll) |
+| **U** | Toggle Left Leg Ragdoll (partial ragdoll) |
+| **O** | Toggle Right Leg Ragdoll (partial ragdoll) |
 
 ## Stance System
 
@@ -81,25 +91,35 @@ The skeleton-based IK system works automatically:
 
 ## Ragdoll Physics System
 
-The character features a complete ragdoll system using PhysicalBone3D:
+The character features an advanced ragdoll system with **full body** and **partial ragdoll** support:
 
-**Controls:**
-- **G** - Toggle ragdoll on/off
+### Full Body Ragdoll
+- **G** - Toggle full body ragdoll on/off
 - **H** - Enable ragdoll with forward impulse (test feature)
+- All limbs become physics-driven
+- Press **G** again to recover and regain control
+
+### Partial Ragdoll (NEW!)
+Individual limb control for dynamic mixed animation/physics:
+- **J** - Toggle left arm ragdoll
+- **K** - Toggle right arm ragdoll
+- **Y** - Toggle both arms ragdoll
+- **U** - Toggle left leg ragdoll
+- **O** - Toggle right leg ragdoll
 
 **Features:**
 - 8 physical bones: Spine, Head, RightShoulder, RightElbow, RightHand, LeftShoulder, LeftElbow, LeftHand
 - Realistic body part masses (Head: 4.5kg, Spine: 25kg, Arms: 2kg/1.5kg/0.4kg)
 - Physics materials with friction (0.8) and bounce (0.1)
-- Collision shapes for each body part
-- Automatic IK disable during ragdoll mode
-- Press **G** again to recover from ragdoll and regain control
+- **Seamless IK-to-Physics transitions** - limbs smoothly inherit current pose before going ragdoll
+- **Mix animation + physics** - ragdoll one arm while keeping the other animated
+- **Collision isolation** - ragdoll bones don't interfere when inactive
 
 **Use Cases:**
-- Death/knockout animations
-- Physics-based reactions to explosions/impacts
-- Realistic fall damage
-- Environmental interactions (e.g., stumbling, getting hit)
+- **Partial ragdoll**: Injured arm while running, weapon recoil reactions, climbing with one hand
+- **Full ragdoll**: Death animations, knockbacks, explosive force reactions
+- **Hybrid gameplay**: Shoot with one arm while the other is disabled/injured
+- **Dynamic reactions**: Hit reactions on specific limbs
 
 ## Testing the Demo
 

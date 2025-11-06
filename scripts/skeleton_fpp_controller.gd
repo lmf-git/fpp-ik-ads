@@ -129,6 +129,17 @@ func _input(event):
 			_toggle_ragdoll()
 		elif event.keycode == KEY_H:
 			_test_ragdoll_impulse()
+		# Partial ragdoll controls
+		elif event.keycode == KEY_J:
+			_toggle_partial_ragdoll("left_arm")
+		elif event.keycode == KEY_K:
+			_toggle_partial_ragdoll("right_arm")
+		elif event.keycode == KEY_Y:
+			_toggle_both_arms_ragdoll()
+		elif event.keycode == KEY_U:
+			_toggle_partial_ragdoll("left_leg")
+		elif event.keycode == KEY_O:
+			_toggle_partial_ragdoll("right_leg")
 
 	# Weapon switching
 	if event is InputEventKey and event.pressed:
@@ -402,6 +413,30 @@ func _test_ragdoll_impulse():
 	ragdoll.enable_ragdoll(impulse)
 	print("Ragdoll enabled with impulse!")
 
+func _toggle_partial_ragdoll(limb: String):
+	"""Toggle partial ragdoll for a specific limb"""
+	if not ragdoll:
+		print("No ragdoll controller found!")
+		return
+
+	ragdoll.toggle_partial_ragdoll(limb)
+	print("Toggled partial ragdoll for ", limb)
+
+func _toggle_both_arms_ragdoll():
+	"""Toggle ragdoll for both arms simultaneously"""
+	if not ragdoll:
+		return
+
+	# If either arm is not ragdolled, enable both. Otherwise disable both.
+	if not ragdoll.left_arm_ragdoll_active or not ragdoll.right_arm_ragdoll_active:
+		ragdoll.enable_partial_ragdoll("left_arm")
+		ragdoll.enable_partial_ragdoll("right_arm")
+		print("Both arms ragdoll ENABLED")
+	else:
+		ragdoll.disable_partial_ragdoll("left_arm")
+		ragdoll.disable_partial_ragdoll("right_arm")
+		print("Both arms ragdoll DISABLED")
+
 func _check_interactions():
 	"""Check for nearby interactable objects and emit prompts"""
 	if not interaction_ray:
@@ -434,3 +469,12 @@ func _process(_delta):
 			print("Weapon: ", current_weapon.weapon_name)
 		if ragdoll:
 			print("Ragdoll: ", "ACTIVE" if ragdoll.is_ragdoll_active else "INACTIVE")
+			if ragdoll.is_any_partial_ragdoll_active():
+				var parts = []
+				if ragdoll.left_arm_ragdoll_active: parts.append("L_ARM")
+				if ragdoll.right_arm_ragdoll_active: parts.append("R_ARM")
+				if ragdoll.left_leg_ragdoll_active: parts.append("L_LEG")
+				if ragdoll.right_leg_ragdoll_active: parts.append("R_LEG")
+				if ragdoll.torso_ragdoll_active: parts.append("TORSO")
+				if ragdoll.head_ragdoll_active: parts.append("HEAD")
+				print("Partial Ragdoll: ", ", ".join(parts))
