@@ -77,6 +77,11 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO):
 	if skeleton:
 		skeleton.physical_bones_start_simulation()
 
+	# Enable collision on all physical bones
+	for bone in physical_bones:
+		bone.collision_layer = 1
+		bone.collision_mask = 1
+
 	# Apply impulse if specified (e.g., from damage direction)
 	if impulse.length() > 0:
 		for bone in physical_bones:
@@ -105,6 +110,11 @@ func _disable_ragdoll():
 	"""Internal method to disable all physical bones"""
 	if skeleton:
 		skeleton.physical_bones_stop_simulation()
+
+	# Disable collision on all physical bones
+	for bone in physical_bones:
+		bone.collision_layer = 0
+		bone.collision_mask = 0
 
 func apply_force_to_bone(bone_name: String, force: Vector3):
 	"""Apply force to a specific bone (e.g., hit reaction)"""
