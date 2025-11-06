@@ -13,7 +13,7 @@ bounce = 0.0
 radius = 0.3
 height = 1.8
 
-[node name="CharacterSkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray", "ragdoll", "animation_player")]
+[node name="CharacterSkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "third_person_camera", "interaction_ray", "ragdoll", "animation_player")]
 physics_material_override = SubResource("PhysicsMaterial_character")
 script = ExtResource("2")
 floor_stop_on_slope = true
@@ -22,6 +22,7 @@ skeleton = NodePath("CharacterModel/RootNode/Skeleton3D")
 right_hand_ik = NodePath("CharacterModel/RootNode/Skeleton3D/RightHandIK")
 left_hand_ik = NodePath("CharacterModel/RootNode/Skeleton3D/LeftHandIK")
 camera = NodePath("CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D")
+third_person_camera = NodePath("ThirdPersonCamera")
 interaction_ray = NodePath("CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D/InteractionRay")
 ragdoll = NodePath("RagdollController")
 animation_player = NodePath("CharacterModel/AnimationPlayer")
@@ -39,12 +40,16 @@ bone_name = "characters3d.com___Head"
 bone_idx = 7
 
 [node name="Camera3D" type="Camera3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
 
 [node name="InteractionRay" type="RayCast3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D"]
 target_position = Vector3(0, 0, -3)
 collision_mask = 3
 collide_with_areas = true
+
+[node name="ThirdPersonCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 3, 5)
+current = false
 
 [node name="RightHandAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
 bone_name = "characters3d.com___R_Hand"
