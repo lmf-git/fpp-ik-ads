@@ -17,6 +17,7 @@ signal damage_taken(amount: float, limb: StringName)
 @export var bone_config: BoneConfig
 
 # ===== COMPONENTS - Clean separation of concerns =====
+@onready var input_controller: InputControllerComponent = $InputController
 @onready var camera_controller: CameraControllerComponent = $CameraController
 @onready var movement_controller: MovementControllerComponent = $MovementController
 @onready var ragdoll_controller: RagdollControllerRefactored = $RagdollController
@@ -57,6 +58,17 @@ func _validate_setup() -> void:
 
 ## Connect component signals for proper orchestration
 func _connect_signals() -> void:
+	# Input controller signals (centralized input handling)
+	if input_controller:
+		input_controller.interact_requested.connect(_on_interact_requested)
+		input_controller.ik_mode_toggle_requested.connect(_on_ik_mode_toggle)
+		input_controller.weapon_switch_requested.connect(_on_weapon_switch_requested)
+		input_controller.ragdoll_toggle_requested.connect(_on_ragdoll_toggle)
+		input_controller.ragdoll_impulse_requested.connect(_on_ragdoll_impulse)
+		input_controller.partial_ragdoll_requested.connect(_on_partial_ragdoll)
+		input_controller.fire_started.connect(_on_fire_started)
+		input_controller.reload_requested.connect(_on_reload_requested)
+
 	# Movement signals
 	if movement_controller:
 		movement_controller.stance_changed.connect(_on_stance_changed)
@@ -101,25 +113,6 @@ func _initialize_components() -> void:
 	if animation_player and animation_player.has_animation("www_characters3d_com | Idle"):
 		animation_player.play("www_characters3d_com | Idle")
 
-func _input(event: InputEvent) -> void:
-	# Centralized input handling
-	if event.is_action_pressed("interact"):
-		_try_interact()
-	elif event.is_action_pressed("toggle_ik_mode"):
-		_toggle_ik_mode()
-	elif event is InputEventKey and event.pressed:
-		# Weapon slot switching (1/2/3 keys)
-		match event.keycode:
-			KEY_1:
-				if weapon_controller:
-					weapon_controller.switch_to_slot(0)
-			KEY_2:
-				if weapon_controller:
-					weapon_controller.switch_to_slot(1)
-			KEY_3:
-				if weapon_controller:
-					weapon_controller.switch_to_slot(2)
-
 func _process(delta: float) -> void:
 	# Update camera ADS (FOV only)
 	if camera_controller and movement_controller:
@@ -128,13 +121,6 @@ func _process(delta: float) -> void:
 	# Update weapon ADS (weapon positioning)
 	if weapon_controller and movement_controller:
 		weapon_controller.update_ads(delta, movement_controller.get_is_aiming())
-
-	# Handle weapon input
-	if weapon_controller:
-		if Input.is_action_pressed("fire"):
-			weapon_controller.fire_weapon()
-		if Input.is_action_just_pressed("reload"):
-			weapon_controller.reload_weapon()
 
 	# Update IK locomotion
 	if ik_locomotion and ik_locomotion.ik_mode_enabled and movement_controller:
@@ -213,6 +199,38 @@ func _on_jumped() -> void:
 	# Trigger jump animation in IK mode
 	if ik_locomotion and ik_locomotion.ik_mode_enabled:
 		ik_locomotion.start_jump()
+
+## ===== INPUT CONTROLLER SIGNAL HANDLERS =====
+
+func _on_interact_requested() -> void:
+	_try_interact()
+
+func _on_ik_mode_toggle() -> void:
+	_toggle_ik_mode()
+
+func _on_weapon_switch_requested(slot: int) -> void:
+	if weapon_controller:
+		weapon_controller.switch_to_slot(slot)
+
+func _on_ragdoll_toggle() -> void:
+	if ragdoll_controller:
+		ragdoll_controller.toggle_ragdoll()
+
+func _on_ragdoll_impulse() -> void:
+	if ragdoll_controller:
+		ragdoll_controller.apply_impulse(Vector3.UP * 500.0)
+
+func _on_partial_ragdoll(limb: StringName) -> void:
+	if ragdoll_controller:
+		ragdoll_controller.toggle_partial_ragdoll(limb)
+
+func _on_fire_started() -> void:
+	if weapon_controller:
+		weapon_controller.fire_weapon()
+
+func _on_reload_requested() -> void:
+	if weapon_controller:
+		weapon_controller.reload_weapon()
 
 func _on_freelook_changed(_is_freelooking: bool) -> void:
 	# Could trigger head turn animations or effects

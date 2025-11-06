@@ -1,15 +1,16 @@
-[gd_scene load_steps=12 format=3 uid="uid://character_skeleton_refactored"]
+[gd_scene load_steps=13 format=3 uid="uid://character_skeleton_refactored"]
 
 [ext_resource type="PackedScene" uid="uid://hf4c85otcg73" path="res://character.gltf" id="1"]
 [ext_resource type="Script" path="res://scripts/character_controller_main.gd" id="2"]
 [ext_resource type="Resource" path="res://config/default_character_config.tres" id="3"]
 [ext_resource type="Resource" path="res://config/default_bone_config.tres" id="4"]
-[ext_resource type="Script" path="res://scripts/components/camera_controller_component.gd" id="5"]
-[ext_resource type="Script" path="res://scripts/components/movement_controller_component.gd" id="6"]
-[ext_resource type="Script" path="res://scripts/components/ragdoll_controller_refactored.gd" id="7"]
-[ext_resource type="Script" path="res://scripts/ik_locomotion.gd" id="8"]
-[ext_resource type="Script" path="res://scripts/components/weapon_controller_component.gd" id="9"]
-[ext_resource type="Script" path="res://scripts/state_machines/weapon_swap_state_machine.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/components/input_controller_component.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/components/camera_controller_component.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/components/movement_controller_component.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/components/ragdoll_controller_refactored.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/ik_locomotion.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/components/weapon_controller_component.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/state_machines/weapon_swap_state_machine.gd" id="11"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_character"]
 friction = 1.0
@@ -86,22 +87,25 @@ override_tip_basis = true
 use_magnet = true
 magnet = Vector3(0, -0.2, -0.5)
 
-[node name="CameraController" type="Node" parent="."]
+[node name="InputController" type="Node" parent="."]
 script = ExtResource("5")
 
-[node name="MovementController" type="Node" parent="."]
+[node name="CameraController" type="Node" parent="."]
 script = ExtResource("6")
 
-[node name="RagdollController" type="Node" parent="."]
+[node name="MovementController" type="Node" parent="."]
 script = ExtResource("7")
 
-[node name="WeaponController" type="Node" parent="."]
-script = ExtResource("9")
+[node name="RagdollController" type="Node" parent="."]
+script = ExtResource("8")
 
-[node name="WeaponSwapStateMachine" type="Node" parent="WeaponController"]
+[node name="WeaponController" type="Node" parent="."]
 script = ExtResource("10")
 
+[node name="WeaponSwapStateMachine" type="Node" parent="WeaponController"]
+script = ExtResource("11")
+
 [node name="IKLocomotion" type="Node" parent="."]
-script = ExtResource("8")
+script = ExtResource("9")
 
 [editable path="CharacterModel"]

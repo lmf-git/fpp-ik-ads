@@ -353,3 +353,20 @@ func _disable_bone_physics(bone_name: StringName) -> void:
 			bone.collision_layer = 0
 			bone.collision_mask = 0
 			break
+
+## Apply impulse to ragdoll (for testing/debugging)
+func apply_impulse(impulse: Vector3) -> void:
+	if not is_ragdoll_active:
+		enable_ragdoll(impulse)
+	else:
+		# Apply impulse to all physical bones
+		for bone in physical_bones:
+			bone.apply_central_impulse(impulse)
+		print("Applied impulse to ragdoll: ", impulse)
+
+## Toggle partial ragdoll for a limb (for testing/debugging)
+func toggle_partial_ragdoll(limb: StringName) -> void:
+	if limb in partial_ragdoll_limbs:
+		disable_partial_ragdoll(limb)
+	else:
+		enable_partial_ragdoll(limb)
