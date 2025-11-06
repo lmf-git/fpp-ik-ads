@@ -151,9 +151,296 @@ func _create_physical_bone(_bone_idx: int, bone_name: String):
 	physical_bone.collision_layer = 0
 	physical_bone.collision_mask = 0
 
+	# Configure joint constraints based on bone type
+	_configure_joint_constraints(physical_bone, bone_name_lower)
+
 	# Add to skeleton
 	skeleton.add_child(physical_bone)
 	physical_bone.owner = skeleton.owner if skeleton.owner else skeleton
+
+func _configure_joint_constraints(physical_bone: PhysicalBone3D, bone_name_lower: String):
+	"""Configure joint constraints based on bone type (from reference implementation)"""
+	if "lower_arm" in bone_name_lower:
+		# Elbows - 6DOF with strict constraints (prevent backward bending completely)
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 2.0
+		physical_bone.angular_damp = 3.0
+		_set_joint_linear_limits(physical_bone, 0.002)
+
+		# Elbow bend - ONLY forward bending, NO backward extension
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(140))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(0))
+		physical_bone.set("joint_constraints/angular_limit_x/softness", 0.3)
+		physical_bone.set("joint_constraints/angular_limit_x/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_x/damping", 4.0)
+
+		# Lock other rotations (elbows don't twist much)
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-10))
+		physical_bone.set("joint_constraints/angular_limit_y/softness", 0.5)
+		physical_bone.set("joint_constraints/angular_limit_y/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_y/damping", 5.0)
+
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(5))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-5))
+		physical_bone.set("joint_constraints/angular_limit_z/softness", 0.5)
+		physical_bone.set("joint_constraints/angular_limit_z/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_z/damping", 5.0)
+
+	elif "lower_leg" in bone_name_lower:
+		# Knees - 6DOF joint with strict constraints to prevent backwards bending
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 0.5
+		physical_bone.angular_damp = 0.8
+		_set_joint_linear_limits(physical_bone, 0.005)
+
+		# Knee movement - only allow forward bending, NO backwards bending
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(120))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(0))
+		_set_joint_side_angular_limits(physical_bone, 5, 5)
+
+	elif "head" in bone_name_lower:
+		# Head - Very stiff joint with soft limits to prevent floppy movement
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 6.0
+		physical_bone.angular_damp = 8.0
+		_set_joint_linear_limits(physical_bone, 0.001)
+
+		# Much more restricted head movement with soft limits
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(15))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-5))
+		physical_bone.set("joint_constraints/angular_limit_x/softness", 0.8)
+		physical_bone.set("joint_constraints/angular_limit_x/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_x/damping", 2.0)
+
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(40))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-40))
+		physical_bone.set("joint_constraints/angular_limit_y/softness", 0.8)
+		physical_bone.set("joint_constraints/angular_limit_y/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_y/damping", 2.0)
+
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-10))
+		physical_bone.set("joint_constraints/angular_limit_z/softness", 0.9)
+		physical_bone.set("joint_constraints/angular_limit_z/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_z/damping", 2.5)
+
+	elif "neck" in bone_name_lower:
+		# Neck - Very stiff supportive joint with strong soft limits
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 8.0
+		physical_bone.angular_damp = 10.0
+		_set_joint_linear_limits(physical_bone, 0.0005)
+
+		# Very restricted neck rotation with strong soft limits
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-5))
+		physical_bone.set("joint_constraints/angular_limit_x/softness", 0.9)
+		physical_bone.set("joint_constraints/angular_limit_x/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_x/damping", 3.0)
+
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(15))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-15))
+		physical_bone.set("joint_constraints/angular_limit_y/softness", 0.9)
+		physical_bone.set("joint_constraints/angular_limit_y/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_y/damping", 3.0)
+
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(3))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-3))
+		physical_bone.set("joint_constraints/angular_limit_z/softness", 0.95)
+		physical_bone.set("joint_constraints/angular_limit_z/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_z/damping", 4.0)
+
+	elif "shoulder" in bone_name_lower:
+		# Shoulders - COMPLETELY RIGID - no movement allowed in ragdoll
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 5.0
+		physical_bone.angular_damp = 8.0
+		_set_joint_linear_limits(physical_bone, 0.001)
+
+		# NO rotation allowed on shoulders - lock all axes
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(1))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-1))
+		physical_bone.set("joint_constraints/angular_limit_x/softness", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_x/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_x/damping", 10.0)
+
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(1))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-1))
+		physical_bone.set("joint_constraints/angular_limit_y/softness", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_y/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_y/damping", 10.0)
+
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(1))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-1))
+		physical_bone.set("joint_constraints/angular_limit_z/softness", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_z/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_z/damping", 10.0)
+
+	elif "upper_arm" in bone_name_lower:
+		# Upper arms - Ball joint with limited range to prevent backward bending
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 2.0
+		physical_bone.angular_damp = 3.0
+		_set_joint_linear_limits(physical_bone, 0.003)
+
+		# Restrict backward arm movement (shoulder extension)
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(120))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-20))
+		physical_bone.set("joint_constraints/angular_limit_x/softness", 0.7)
+		physical_bone.set("joint_constraints/angular_limit_x/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_x/damping", 3.0)
+
+		# Side-to-side movement (abduction/adduction)
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(90))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-30))
+		physical_bone.set("joint_constraints/angular_limit_y/softness", 0.7)
+		physical_bone.set("joint_constraints/angular_limit_y/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_y/damping", 3.0)
+
+		# Arm rotation limits
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(45))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-45))
+		physical_bone.set("joint_constraints/angular_limit_z/softness", 0.8)
+		physical_bone.set("joint_constraints/angular_limit_z/restitution", 0.0)
+		physical_bone.set("joint_constraints/angular_limit_z/damping", 2.0)
+
+	elif "spine" in bone_name_lower or "chest" in bone_name_lower:
+		# Spine - 6DOF joint with VERY tight limits to prevent stretching
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 0.95
+		physical_bone.angular_damp = 0.98
+
+		# Very tight linear limits to prevent spine stretching
+		physical_bone.set("joint_constraints/linear_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/linear_limit_x/upper_limit", 0.001)
+		physical_bone.set("joint_constraints/linear_limit_x/lower_limit", -0.001)
+		physical_bone.set("joint_constraints/linear_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/linear_limit_y/upper_limit", 0.001)
+		physical_bone.set("joint_constraints/linear_limit_y/lower_limit", -0.001)
+		physical_bone.set("joint_constraints/linear_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/linear_limit_z/upper_limit", 0.001)
+		physical_bone.set("joint_constraints/linear_limit_z/lower_limit", -0.001)
+
+		# Very restricted spine rotation limits
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(5))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-5))
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(8))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-8))
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(3))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-3))
+
+	elif "hips" in bone_name_lower:
+		# Hips/Pelvis - 6DOF joint (anchor point) with minimal movement
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 0.9
+		physical_bone.angular_damp = 0.95
+		_set_joint_linear_limits(physical_bone, 0.01)
+
+		# Limited pelvis rotation
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(20))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-20))
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(15))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-15))
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-10))
+
+	elif "upper_leg" in bone_name_lower:
+		# Thighs - 6DOF joint with tight hip constraints
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 0.85
+		physical_bone.angular_damp = 0.95
+		_set_joint_linear_limits(physical_bone, 0.01)
+
+		# Hip movement - prevent excessive sideways bending
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(70))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-20))
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(25))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-25))
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(15))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-15))
+
+	elif "hand" in bone_name_lower:
+		# Hands - 6DOF joint with tight wrist constraints
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 0.9
+		physical_bone.angular_damp = 0.98
+		_set_joint_linear_limits(physical_bone, 0.002)
+
+		# Very restricted wrist movement - no spinning
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(20))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-30))
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(15))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-15))
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-10))
+
+	elif "foot" in bone_name_lower:
+		# Feet - 6DOF joint with tight ankle constraints
+		physical_bone.joint_type = PhysicalBone3D.JOINT_TYPE_6DOF
+		physical_bone.linear_damp = 0.9
+		physical_bone.angular_damp = 0.95
+		_set_joint_linear_limits(physical_bone, 0.005)
+
+		# Ankle movement - very limited to prevent spinning
+		physical_bone.set("joint_constraints/angular_limit_x/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_x/upper_limit", deg_to_rad(15))
+		physical_bone.set("joint_constraints/angular_limit_x/lower_limit", deg_to_rad(-30))
+		physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-10))
+		physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+		physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(10))
+		physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-10))
+
+func _set_joint_linear_limits(physical_bone: PhysicalBone3D, limit: float):
+	"""Set linear limits on all axes"""
+	physical_bone.set("joint_constraints/linear_limit_x/enabled", true)
+	physical_bone.set("joint_constraints/linear_limit_x/upper_limit", limit)
+	physical_bone.set("joint_constraints/linear_limit_x/lower_limit", -limit)
+	physical_bone.set("joint_constraints/linear_limit_y/enabled", true)
+	physical_bone.set("joint_constraints/linear_limit_y/upper_limit", limit)
+	physical_bone.set("joint_constraints/linear_limit_y/lower_limit", -limit)
+	physical_bone.set("joint_constraints/linear_limit_z/enabled", true)
+	physical_bone.set("joint_constraints/linear_limit_z/upper_limit", limit)
+	physical_bone.set("joint_constraints/linear_limit_z/lower_limit", -limit)
+
+func _set_joint_side_angular_limits(physical_bone: PhysicalBone3D, y_limit: float, z_limit: float):
+	"""Set angular limits on Y and Z axes (helper for knees/elbows)"""
+	physical_bone.set("joint_constraints/angular_limit_y/enabled", true)
+	physical_bone.set("joint_constraints/angular_limit_y/upper_limit", deg_to_rad(y_limit))
+	physical_bone.set("joint_constraints/angular_limit_y/lower_limit", deg_to_rad(-y_limit))
+	physical_bone.set("joint_constraints/angular_limit_z/enabled", true)
+	physical_bone.set("joint_constraints/angular_limit_z/upper_limit", deg_to_rad(z_limit))
+	physical_bone.set("joint_constraints/angular_limit_z/lower_limit", deg_to_rad(-z_limit))
 
 func _get_bone_mass(bone_name: String) -> float:
 	"""Get approximate mass for body parts (in kg)"""
