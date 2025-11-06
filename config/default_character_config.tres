@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+walk_speed = 3.0
+sprint_speed = 6.0
+crouch_speed = 1.5
+prone_speed = 0.8
+jump_velocity = 4.5
+gravity = 9.8
+friction = 25.0
+air_friction = 2.0
+mouse_sensitivity = 0.003
+max_look_up = 80.0
+max_look_down = 80.0
+body_rotation_speed = 3.0
+hipfire_fov = 90.0
+ads_fov = 50.0
+ads_transition_speed = 8.0
+freelook_max_angle = 120.0
+neck_max_pitch_up = 60.0
+neck_max_pitch_down = 50.0
+neck_max_yaw = 80.0
+weapon_swap_speed = 3.0

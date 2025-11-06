@@ -1,0 +1,111 @@
+[gd_scene load_steps=13 format=3 uid="uid://character_skeleton_refactored"]
+
+[ext_resource type="PackedScene" uid="uid://hf4c85otcg73" path="res://character.gltf" id="1"]
+[ext_resource type="Script" path="res://scripts/character_controller_main.gd" id="2"]
+[ext_resource type="Resource" path="res://config/default_character_config.tres" id="3"]
+[ext_resource type="Resource" path="res://config/default_bone_config.tres" id="4"]
+[ext_resource type="Script" path="res://scripts/components/input_controller_component.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/components/camera_controller_component.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/components/movement_controller_component.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/components/ragdoll_controller_refactored.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/ik_locomotion.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/components/weapon_controller_component.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/state_machines/weapon_swap_state_machine.gd" id="11"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_character"]
+friction = 1.0
+rough = true
+bounce = 0.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.3
+height = 1.8
+
+[node name="CharacterSkeletonPlayer" type="CharacterBody3D"]
+physics_material_override = SubResource("PhysicsMaterial_character")
+script = ExtResource("2")
+floor_stop_on_slope = true
+floor_max_angle = 0.785398
+config = ExtResource("3")
+bone_config = ExtResource("4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="CharacterModel" parent="." instance=ExtResource("1")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="Skeleton3D" parent="CharacterModel/RootNode" index="0"]
+unique_name_in_owner = true
+
+[node name="AnimationPlayer" parent="CharacterModel" index="1"]
+unique_name_in_owner = true
+
+[node name="HeadAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
+bone_name = "characters3d.com___Head"
+bone_idx = 7
+
+[node name="FPSCamera" type="Camera3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+
+[node name="InteractionRay" type="RayCast3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+target_position = Vector3(0, 0, -3)
+collision_mask = 3
+collide_with_areas = true
+enabled = true
+
+[node name="ThirdPersonCamera" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 3, 5)
+current = false
+
+[node name="RightHandAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
+bone_name = "characters3d.com___R_Hand"
+
+[node name="LeftHandAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
+bone_name = "characters3d.com___L_Hand"
+
+[node name="RightHandIK" type="SkeletonIK3D" parent="CharacterModel/RootNode/Skeleton3D"]
+unique_name_in_owner = true
+root_bone = "characters3d.com___R_Shoulder"
+tip_bone = "characters3d.com___R_Hand"
+interpolation = 0.5
+override_tip_basis = true
+use_magnet = true
+magnet = Vector3(0, -0.2, -0.5)
+
+[node name="LeftHandIK" type="SkeletonIK3D" parent="CharacterModel/RootNode/Skeleton3D"]
+unique_name_in_owner = true
+root_bone = "characters3d.com___L_Shoulder"
+tip_bone = "characters3d.com___L_Hand"
+interpolation = 0.5
+override_tip_basis = true
+use_magnet = true
+magnet = Vector3(0, -0.2, -0.5)
+
+[node name="InputController" type="Node" parent="."]
+script = ExtResource("5")
+
+[node name="CameraController" type="Node" parent="."]
+script = ExtResource("6")
+
+[node name="MovementController" type="Node" parent="."]
+script = ExtResource("7")
+
+[node name="RagdollController" type="Node" parent="."]
+script = ExtResource("8")
+
+[node name="WeaponController" type="Node" parent="."]
+script = ExtResource("10")
+
+[node name="WeaponSwapStateMachine" type="Node" parent="WeaponController"]
+script = ExtResource("11")
+
+[node name="IKLocomotion" type="Node" parent="."]
+script = ExtResource("9")
+
+[editable path="CharacterModel"]
