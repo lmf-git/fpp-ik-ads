@@ -23,6 +23,7 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var ragdoll_controller: RagdollControllerRefactored = $RagdollController
 @onready var weapon_controller: WeaponControllerComponent = $WeaponController
 @onready var ik_locomotion: IKLocomotion = $IKLocomotion
+@onready var ik_debug_controller: IKDebugControllerComponent = $IKDebugController
 
 # ===== SCENE REFERENCES - Using unique names (%) for reliability =====
 @onready var skeleton: Skeleton3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D")
@@ -62,6 +63,7 @@ func _connect_signals() -> void:
 	if input_controller:
 		input_controller.interact_requested.connect(_on_interact_requested)
 		input_controller.ik_mode_toggle_requested.connect(_on_ik_mode_toggle)
+		input_controller.ik_debug_toggle_requested.connect(_on_ik_debug_toggle)
 		input_controller.weapon_switch_requested.connect(_on_weapon_switch_requested)
 		input_controller.ragdoll_toggle_requested.connect(_on_ragdoll_toggle)
 		input_controller.ragdoll_impulse_requested.connect(_on_ragdoll_impulse)
@@ -108,6 +110,9 @@ func _initialize_components() -> void:
 	if ik_locomotion:
 		ik_locomotion.skeleton = skeleton
 		ik_locomotion.character_body = self
+
+	if ik_debug_controller:
+		ik_debug_controller.ik_locomotion = ik_locomotion
 
 	# Start idle animation
 	if animation_player and animation_player.has_animation("www_characters3d_com | Idle"):
@@ -207,6 +212,10 @@ func _on_interact_requested() -> void:
 
 func _on_ik_mode_toggle() -> void:
 	_toggle_ik_mode()
+
+func _on_ik_debug_toggle() -> void:
+	if ik_debug_controller:
+		ik_debug_controller.toggle_debug_mode()
 
 func _on_weapon_switch_requested(slot: int) -> void:
 	if weapon_controller:
