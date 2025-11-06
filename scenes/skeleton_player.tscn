@@ -39,6 +39,8 @@ size = Vector3(0.12, 0.08, 0.2)
 
 [node name="SkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray", "ragdoll")]
 script = ExtResource("1")
+floor_stop_on_slope = true
+floor_max_angle = 0.785398
 skeleton = NodePath("Skeleton3D")
 right_hand_ik = NodePath("Skeleton3D/RightHandIK")
 left_hand_ik = NodePath("Skeleton3D/LeftHandIK")
