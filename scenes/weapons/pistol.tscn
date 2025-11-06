@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://c8vxm2k5yx9nl"]
+[gd_scene load_steps=7 format=3 uid="uid://c8vxm2k5yx9nl"]
 
 [ext_resource type="Script" path="res://scripts/weapon.gd" id="1"]
 
@@ -15,6 +15,9 @@ size = Vector3(0.05, 0.08, 0.2)
 albedo_color = Color(0.2, 0.2, 0.2, 1)
 metallic = 0.8
 roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_sight"]
+size = Vector3(0.01, 0.01, 0.01)
 
 [node name="Pistol" type="Node3D" node_paths=PackedStringArray("grip_point", "support_point", "ads_target")]
 script = ExtResource("1")
@@ -53,5 +56,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, -0.15)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, -0.22)
 
 [node name="SightMesh" type="MeshInstance3D" parent="ADSTarget"]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
-mesh = SubResource("BoxMesh_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_sight")
+surface_material_override/0 = SubResource("StandardMaterial3D_pistol")
