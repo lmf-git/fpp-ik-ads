@@ -130,7 +130,6 @@ func _update_performance_text():
 	# Memory
 	text += "[b]Memory[/b]\n"
 	text += "Static: %.1f MB\n" % (Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0)
-	text += "Dynamic: %.1f MB\n" % (Performance.get_monitor(Performance.MEMORY_DYNAMIC) / 1048576.0)
 	text += "\n"
 
 	# Physics
