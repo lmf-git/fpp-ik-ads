@@ -173,26 +173,29 @@ func _physics_process(delta):
 	var movement_basis = Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation)
 	var direction = (movement_basis.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
-	# Use acceleration instead of instant velocity for smooth movement
-	var acceleration = 80.0  # Fast acceleration
-	var deceleration = 100.0  # Very strong deceleration for instant stopping
-
+	# FPS-style movement: instant velocity changes when on floor
 	if direction and is_on_floor():
-		# Accelerate towards target speed
-		var target_velocity = direction * speed
-		velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta)
-		velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta)
+		# Set velocity directly for instant responsive movement
+		velocity.x = direction.x * speed
+		velocity.z = direction.z * speed
+	elif is_on_floor():
+		# Apply strong friction when on ground with no input
+		var friction = 25.0
+		velocity.x = move_toward(velocity.x, 0, friction * delta)
+		velocity.z = move_toward(velocity.z, 0, friction * delta)
 	else:
-		# Decelerate to stop
-		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
-		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
+		# Air control - apply slight deceleration
+		var air_friction = 2.0
+		velocity.x = move_toward(velocity.x, 0, air_friction * delta)
+		velocity.z = move_toward(velocity.z, 0, air_friction * delta)
 
 	# Snap very small velocities to zero to prevent micro-sliding
-	var velocity_threshold = 0.01
-	if abs(velocity.x) < velocity_threshold:
-		velocity.x = 0
-	if abs(velocity.z) < velocity_threshold:
-		velocity.z = 0
+	if is_on_floor():
+		var velocity_threshold = 0.1
+		if abs(velocity.x) < velocity_threshold:
+			velocity.x = 0
+		if abs(velocity.z) < velocity_threshold:
+			velocity.z = 0
 
 	move_and_slide()
 
