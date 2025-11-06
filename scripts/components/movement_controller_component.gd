@@ -13,6 +13,9 @@ enum Stance { STANDING, CROUCHING, PRONE }
 
 @onready var character_body: CharacterBody3D = get_parent()
 
+# Cached reference to camera controller (avoid tree lookups every frame)
+var camera_controller: CameraControllerComponent
+
 # State
 var current_stance: Stance = Stance.STANDING
 var is_sprinting: bool = false
@@ -22,6 +25,11 @@ var velocity: Vector3 = Vector3.ZERO
 func _ready() -> void:
 	if not config:
 		push_error("MovementController: CharacterConfig not assigned!")
+
+	# Cache camera controller reference (called once instead of 60 times/second)
+	camera_controller = get_parent().get_node_or_null("CameraController") as CameraControllerComponent
+	if not camera_controller:
+		push_error("MovementController: CameraController not found! Movement direction will not work correctly.")
 
 func _physics_process(delta: float) -> void:
 	# Get input state
@@ -98,7 +106,7 @@ func is_moving() -> bool:
 
 ## Get parent's body rotation (from CameraController)
 func get_parent_rotation() -> float:
-	var camera_controller := get_parent().get_node_or_null("CameraController") as CameraControllerComponent
+	# Use cached reference (no tree traversal!)
 	return camera_controller.get_body_rotation() if camera_controller else 0.0
 
 ## Get current stance

@@ -20,6 +20,7 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var camera_controller: CameraControllerComponent = $CameraController
 @onready var movement_controller: MovementControllerComponent = $MovementController
 @onready var ragdoll_controller: RagdollControllerRefactored = $RagdollController
+@onready var weapon_controller: WeaponControllerComponent = $WeaponController
 @onready var ik_locomotion: IKLocomotion = $IKLocomotion
 
 # ===== SCENE REFERENCES - Using unique names (%) for reliability =====
@@ -30,6 +31,7 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var animation_player: AnimationPlayer = get_node_or_null("CharacterModel/AnimationPlayer")
 @onready var right_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandIK")
 @onready var left_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/LeftHandIK")
+@onready var right_hand_attachment: Node3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandAttachment")
 
 # ===== STATE =====
 var current_weapon: Weapon
@@ -83,6 +85,14 @@ func _initialize_components() -> void:
 	if ragdoll_controller:
 		ragdoll_controller.bone_config = bone_config
 
+	if weapon_controller:
+		weapon_controller.config = config
+		weapon_controller.bone_config = bone_config
+		# Initialize with scene references
+		weapon_controller.initialize(skeleton, right_hand_ik, left_hand_ik, right_hand_attachment, fps_camera)
+		# Connect signals
+		weapon_controller.weapon_changed.connect(_on_weapon_changed)
+
 	if ik_locomotion:
 		ik_locomotion.skeleton = skeleton
 		ik_locomotion.character_body = self
@@ -97,11 +107,34 @@ func _input(event: InputEvent) -> void:
 		_try_interact()
 	elif event.is_action_pressed("toggle_ik_mode"):
 		_toggle_ik_mode()
+	elif event is InputEventKey and event.pressed:
+		# Weapon slot switching (1/2/3 keys)
+		match event.keycode:
+			KEY_1:
+				if weapon_controller:
+					weapon_controller.switch_to_slot(0)
+			KEY_2:
+				if weapon_controller:
+					weapon_controller.switch_to_slot(1)
+			KEY_3:
+				if weapon_controller:
+					weapon_controller.switch_to_slot(2)
 
 func _process(delta: float) -> void:
-	# Update ADS based on movement state
+	# Update camera ADS (FOV only)
 	if camera_controller and movement_controller:
 		camera_controller.update_ads(delta, movement_controller.get_is_aiming())
+
+	# Update weapon ADS (weapon positioning)
+	if weapon_controller and movement_controller:
+		weapon_controller.update_ads(delta, movement_controller.get_is_aiming())
+
+	# Handle weapon input
+	if weapon_controller:
+		if Input.is_action_pressed("fire"):
+			weapon_controller.fire_weapon()
+		if Input.is_action_just_pressed("reload"):
+			weapon_controller.reload_weapon()
 
 	# Update IK locomotion
 	if ik_locomotion and ik_locomotion.ik_mode_enabled and movement_controller:
@@ -137,9 +170,10 @@ func _try_interact() -> void:
 		_pickup_weapon(collider)
 
 func _pickup_weapon(pickup: WeaponPickup) -> void:
-	# TODO: Implement weapon swap using state machine
-	print("Picking up weapon: ", pickup.weapon_name)
-	weapon_changed.emit(null)  # Placeholder
+	if weapon_controller:
+		weapon_controller.pickup_weapon(pickup)
+	else:
+		print("WeaponController not available")
 
 ## ===== IK MODE TOGGLE =====
 
@@ -200,6 +234,12 @@ func _on_ragdoll_disabled() -> void:
 	# Re-enable systems after ragdoll
 	if movement_controller:
 		movement_controller.process_mode = Node.PROCESS_MODE_INHERIT
+
+func _on_weapon_changed(new_weapon: Weapon, old_weapon: Weapon) -> void:
+	# Update current weapon reference
+	current_weapon = new_weapon
+	weapon_changed.emit(new_weapon)
+	print("Character: Weapon changed to ", new_weapon.weapon_name if new_weapon else "None")
 
 ## ===== PUBLIC API - For external systems =====
 

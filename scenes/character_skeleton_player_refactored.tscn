@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://character_skeleton_refactored"]
+[gd_scene load_steps=12 format=3 uid="uid://character_skeleton_refactored"]
 
 [ext_resource type="PackedScene" uid="uid://hf4c85otcg73" path="res://character.gltf" id="1"]
 [ext_resource type="Script" path="res://scripts/character_controller_main.gd" id="2"]
@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://scripts/components/movement_controller_component.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/components/ragdoll_controller_refactored.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/ik_locomotion.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/components/weapon_controller_component.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/state_machines/weapon_swap_state_machine.gd" id="10"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_character"]
 friction = 1.0
@@ -92,6 +94,12 @@ script = ExtResource("6")
 
 [node name="RagdollController" type="Node" parent="."]
 script = ExtResource("7")
+
+[node name="WeaponController" type="Node" parent="."]
+script = ExtResource("9")
+
+[node name="WeaponSwapStateMachine" type="Node" parent="WeaponController"]
+script = ExtResource("10")
 
 [node name="IKLocomotion" type="Node" parent="."]
 script = ExtResource("8")
