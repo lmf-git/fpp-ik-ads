@@ -2,12 +2,12 @@ extends Node
 class_name IKDebugControllerComponent
 
 ## Debug controller for manual IK target manipulation
-## Press B to toggle debug mode, 1-4 to select targets, IJKL/UO to move
+## Press B to toggle debug mode, then use controls to manipulate IK targets
+## When active, disables normal character input to avoid conflicts
 
 # Movement speed constants
 const MOVEMENT_SPEED: float = 0.02  # Units per frame for horizontal movement
 const VERTICAL_SPEED: float = 0.02  # Units per frame for vertical movement
-const ROTATION_SPEED: float = 0.05  # Radians per frame
 
 @export var ik_locomotion: IKLocomotion
 
@@ -16,37 +16,47 @@ var debug_mode_enabled: bool = false
 var selected_target_index: int = 0  # 0=left_hand, 1=right_hand, 2=left_foot, 3=right_foot
 var target_names: Array[String] = ["Left Hand", "Right Hand", "Left Foot", "Right Foot"]
 
-# Input state
-var movement_input: Vector3 = Vector3.ZERO
+# Cached reference to input controller (to disable normal input when in debug mode)
+var input_controller: InputControllerComponent = null
 
 func _ready() -> void:
 	if not ik_locomotion:
 		push_error("IKDebugController: IKLocomotion not assigned!")
 		return
 
-	print("IKDebugController: Ready (Press B to toggle, 1-4 to select target)")
+	# Cache input controller reference
+	input_controller = get_parent().get_node_or_null("InputController")
+
+	print("IKDebugController: Ready (Press B to toggle)")
 
 func _input(event: InputEvent) -> void:
+	# Only process input when debug mode is enabled
 	if not debug_mode_enabled:
 		return
 
-	if event is InputEventKey and event.pressed:
+	# Handle key input for target selection
+	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			KEY_1:
+			KEY_F1:
 				_select_target(0)
-			KEY_2:
+				get_viewport().set_input_as_handled()
+			KEY_F2:
 				_select_target(1)
-			KEY_3:
+				get_viewport().set_input_as_handled()
+			KEY_F3:
 				_select_target(2)
-			KEY_4:
+				get_viewport().set_input_as_handled()
+			KEY_F4:
 				_select_target(3)
+				get_viewport().set_input_as_handled()
 
 func _process(_delta: float) -> void:
+	# Only process when debug mode is enabled
 	if not debug_mode_enabled:
 		return
 
 	# Read movement input
-	movement_input = Vector3.ZERO
+	var movement_input := Vector3.ZERO
 
 	# Horizontal movement (Arrow Keys)
 	if Input.is_key_pressed(KEY_LEFT):
@@ -73,15 +83,23 @@ func toggle_debug_mode() -> void:
 	debug_mode_enabled = not debug_mode_enabled
 
 	if debug_mode_enabled:
+		# Disable normal input to avoid conflicts
+		if input_controller:
+			input_controller.disable_input()
+
 		print("\n=== IK DEBUG MODE ENABLED ===")
 		print("Controls:")
-		print("  1-4: Select target (1=LHand, 2=RHand, 3=LFoot, 4=RFoot)")
+		print("  F1-F4: Select target (F1=LHand, F2=RHand, F3=LFoot, F4=RFoot)")
 		print("  Arrow Keys: Move target horizontally")
 		print("  Page Up/Down: Move target vertically")
 		print("  B: Exit debug mode")
 		print("Selected: ", target_names[selected_target_index])
 		print("=============================\n")
 	else:
+		# Re-enable normal input
+		if input_controller:
+			input_controller.enable_input()
+
 		print("\n=== IK DEBUG MODE DISABLED ===\n")
 
 ## Select which IK target to control

@@ -125,6 +125,36 @@ func perform_weapon_switch(pickup: WeaponPickup, old_weapon: Weapon) -> void:
 		# Remove pickup from world
 		pickup.queue_free()
 
+## Detach weapon from character without dropping it (for hotswapping between slots)
+func _detach_weapon(weapon: Weapon) -> void:
+	if not weapon:
+		return
+
+	# Remove from hand attachment but don't destroy
+	if weapon.get_parent():
+		weapon.get_parent().remove_child(weapon)
+
+	# Disable weapon IK while detached
+	if right_hand_ik:
+		right_hand_ik.stop()
+	if left_hand_ik:
+		left_hand_ik.stop()
+
+## Attach weapon to character hand (for hotswapping between slots)
+func _attach_weapon(weapon: Weapon) -> void:
+	if not weapon or not right_hand_attachment:
+		return
+
+	# Add to hand attachment
+	right_hand_attachment.add_child(weapon)
+	weapon.position = Vector3.ZERO
+	weapon.rotation = Vector3.ZERO
+
+	# Setup IK for this weapon
+	_setup_weapon_ik(weapon)
+
+	print("WeaponController: Attached ", weapon.weapon_name)
+
 func _drop_weapon(weapon: Weapon) -> void:
 	if not weapon:
 		return
@@ -252,13 +282,33 @@ func switch_to_slot(slot: int) -> void:
 	if slot == current_weapon_slot:
 		return  # Already equipped
 
-	if slot < 0 or slot >= holstered_weapons.size():
+	# Ensure holstered_weapons array is large enough
+	while holstered_weapons.size() <= slot:
+		holstered_weapons.append(null)
+
+	# Check if there's a weapon in this slot
+	var target_weapon := holstered_weapons[slot]
+	if not target_weapon:
 		print("WeaponController: No weapon in slot ", slot)
 		return
 
-	# TODO: Implement weapon swap between holstered weapons
+	# Don't swap if already in progress
+	if weapon_swap_state_machine and weapon_swap_state_machine.is_swapping():
+		print("WeaponController: Cannot switch during weapon swap")
+		return
+
+	# Swap: put current weapon in old slot, equip target weapon
+	if current_weapon:
+		holstered_weapons[current_weapon_slot] = current_weapon
+		_detach_weapon(current_weapon)
+
+	holstered_weapons[slot] = null
 	current_weapon_slot = slot
-	print("WeaponController: Switching to slot ", slot)
+	current_weapon = target_weapon
+	_attach_weapon(current_weapon)
+
+	weapon_changed.emit(current_weapon)
+	print("WeaponController: Switched to ", target_weapon.weapon_name, " in slot ", slot)
 
 ## Get current weapon for external systems
 func get_current_weapon() -> Weapon:
