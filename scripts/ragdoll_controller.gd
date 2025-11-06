@@ -33,6 +33,10 @@ var transitioning_bones: Dictionary = {}  # bone_name -> {start_pose, target_pos
 func _ready():
 	if skeleton:
 		_find_physical_bones()
+		if physical_bones.is_empty():
+			print("No PhysicalBone3D nodes found - auto-generating for character model...")
+			_auto_generate_physical_bones()
+			_find_physical_bones()
 		_disable_ragdoll()
 
 func _find_physical_bones():
@@ -56,6 +60,100 @@ func _configure_physical_bone(bone: PhysicalBone3D):
 	# Set physics material properties
 	bone.friction = ragdoll_friction
 	bone.bounce = ragdoll_bounce
+
+func _auto_generate_physical_bones():
+	"""Auto-generate PhysicalBone3D nodes for main bones if they don't exist"""
+	if not skeleton:
+		return
+
+	# List of main bones to create physics for (using character.gltf bone names)
+	var main_bones = [
+		"characters3d.com___Hips",
+		"characters3d.com___Spine",
+		"characters3d.com___Spine1",
+		"characters3d.com___Spine2",
+		"characters3d.com___Neck",
+		"characters3d.com___Head",
+		"characters3d.com___L_Shoulder",
+		"characters3d.com___L_Upper_Arm",
+		"characters3d.com___L_Lower_Arm",
+		"characters3d.com___L_Hand",
+		"characters3d.com___R_Shoulder",
+		"characters3d.com___R_Upper_Arm",
+		"characters3d.com___R_Lower_Arm",
+		"characters3d.com___R_Hand",
+		"characters3d.com___L_Upper_Leg",
+		"characters3d.com___L_Lower_Leg",
+		"characters3d.com___L_Foot",
+		"characters3d.com___R_Upper_Leg",
+		"characters3d.com___R_Lower_Leg",
+		"characters3d.com___R_Foot"
+	]
+
+	var created_count = 0
+	for bone_name in main_bones:
+		var bone_idx = skeleton.find_bone(bone_name)
+		if bone_idx >= 0:
+			_create_physical_bone(bone_idx, bone_name)
+			created_count += 1
+
+	print("Auto-generated ", created_count, " PhysicalBone3D nodes")
+
+func _create_physical_bone(bone_idx: int, bone_name: String):
+	"""Create a PhysicalBone3D node for the specified bone"""
+	var physical_bone = PhysicalBone3D.new()
+	physical_bone.name = "PhysicalBone_" + bone_name.replace("characters3d.com___", "")
+	physical_bone.bone_name = bone_name
+
+	# Create collision shape based on bone type
+	var bone_name_lower = bone_name.to_lower()
+	var shape: Shape3D
+
+	if "head" in bone_name_lower:
+		var sphere = SphereShape3D.new()
+		sphere.radius = 0.08
+		shape = sphere
+	elif "hips" in bone_name_lower:
+		var box = BoxShape3D.new()
+		box.size = Vector3(0.25, 0.2, 0.2)
+		shape = box
+	elif "spine" in bone_name_lower or "chest" in bone_name_lower:
+		var box = BoxShape3D.new()
+		box.size = Vector3(0.2, 0.3, 0.15)
+		shape = box
+	elif "hand" in bone_name_lower:
+		var box = BoxShape3D.new()
+		box.size = Vector3(0.06, 0.08, 0.03)
+		shape = box
+	elif "foot" in bone_name_lower:
+		var box = BoxShape3D.new()
+		box.size = Vector3(0.08, 0.05, 0.15)
+		shape = box
+	else:
+		# Default capsule for limbs
+		var capsule = CapsuleShape3D.new()
+		capsule.radius = 0.03
+		capsule.height = 0.2
+		shape = capsule
+
+	var collision = CollisionShape3D.new()
+	collision.shape = shape
+	physical_bone.add_child(collision)
+
+	# Set physics properties
+	physical_bone.mass = 1.0
+	physical_bone.friction = 1.0
+	physical_bone.bounce = 0.0
+	physical_bone.linear_damp = 0.5
+	physical_bone.angular_damp = 0.5
+
+	# Disable collision by default (will be enabled when ragdoll activates)
+	physical_bone.collision_layer = 0
+	physical_bone.collision_mask = 0
+
+	# Add to skeleton
+	skeleton.add_child(physical_bone)
+	physical_bone.owner = skeleton.owner if skeleton.owner else skeleton
 
 func _get_bone_mass(bone_name: String) -> float:
 	"""Get approximate mass for body parts (in kg)"""
