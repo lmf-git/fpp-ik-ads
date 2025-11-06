@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://character_skeleton_fpp"]
+[gd_scene load_steps=5 format=3 uid="uid://character_skeleton_fpp"]
 
 [ext_resource type="PackedScene" uid="uid://hf4c85otcg73" path="res://character.gltf" id="1"]
 [ext_resource type="Script" path="res://scripts/skeleton_fpp_controller.gd" id="2"]
@@ -13,17 +13,18 @@ bounce = 0.0
 radius = 0.3
 height = 1.8
 
-[node name="CharacterSkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray", "ragdoll")]
+[node name="CharacterSkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray", "ragdoll", "animation_player")]
 physics_material_override = SubResource("PhysicsMaterial_character")
 script = ExtResource("2")
 floor_stop_on_slope = true
 floor_max_angle = 0.785398
-skeleton = NodePath("Model/Skeleton3D")
-right_hand_ik = NodePath("Model/Skeleton3D/RightHandIK")
-left_hand_ik = NodePath("Model/Skeleton3D/LeftHandIK")
-camera = NodePath("Model/Skeleton3D/HeadAttachment/Camera3D")
-interaction_ray = NodePath("Model/Skeleton3D/HeadAttachment/Camera3D/InteractionRay")
+skeleton = NodePath("CharacterModel/RootNode/Skeleton3D")
+right_hand_ik = NodePath("CharacterModel/RootNode/Skeleton3D/RightHandIK")
+left_hand_ik = NodePath("CharacterModel/RootNode/Skeleton3D/LeftHandIK")
+camera = NodePath("CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D")
+interaction_ray = NodePath("CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D/InteractionRay")
 ragdoll = NodePath("RagdollController")
+animation_player = NodePath("CharacterModel/AnimationPlayer")
 head_bone_name = "characters3d.com___Head"
 spine_bone_name = "characters3d.com___Spine"
 
@@ -31,26 +32,27 @@ spine_bone_name = "characters3d.com___Spine"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_1")
 
-[node name="Model" parent="." instance=ExtResource("1")]
+[node name="CharacterModel" parent="." instance=ExtResource("1")]
 
-[node name="HeadAttachment" type="BoneAttachment3D" parent="Model/Skeleton3D"]
+[node name="HeadAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
 bone_name = "characters3d.com___Head"
+bone_idx = 7
 
-[node name="Camera3D" type="Camera3D" parent="Model/Skeleton3D/HeadAttachment"]
+[node name="Camera3D" type="Camera3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15)
 
-[node name="InteractionRay" type="RayCast3D" parent="Model/Skeleton3D/HeadAttachment/Camera3D"]
+[node name="InteractionRay" type="RayCast3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment/Camera3D"]
 target_position = Vector3(0, 0, -3)
 collision_mask = 3
 collide_with_areas = true
 
-[node name="RightHandAttachment" type="BoneAttachment3D" parent="Model/Skeleton3D"]
+[node name="RightHandAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
 bone_name = "characters3d.com___R_Hand"
 
-[node name="LeftHandAttachment" type="BoneAttachment3D" parent="Model/Skeleton3D"]
+[node name="LeftHandAttachment" type="BoneAttachment3D" parent="CharacterModel/RootNode/Skeleton3D"]
 bone_name = "characters3d.com___L_Hand"
 
-[node name="RightHandIK" type="SkeletonIK3D" parent="Model/Skeleton3D"]
+[node name="RightHandIK" type="SkeletonIK3D" parent="CharacterModel/RootNode/Skeleton3D"]
 root_bone = "characters3d.com___R_Shoulder"
 tip_bone = "characters3d.com___R_Hand"
 interpolation = 0.5
@@ -58,7 +60,7 @@ override_tip_basis = true
 use_magnet = true
 magnet = Vector3(0, -0.2, -0.5)
 
-[node name="LeftHandIK" type="SkeletonIK3D" parent="Model/Skeleton3D"]
+[node name="LeftHandIK" type="SkeletonIK3D" parent="CharacterModel/RootNode/Skeleton3D"]
 root_bone = "characters3d.com___L_Shoulder"
 tip_bone = "characters3d.com___L_Hand"
 interpolation = 0.5
@@ -68,5 +70,5 @@ magnet = Vector3(0, -0.2, -0.5)
 
 [node name="RagdollController" type="Node" parent="." node_paths=PackedStringArray("skeleton", "character_body")]
 script = ExtResource("3")
-skeleton = NodePath("../Model/Skeleton3D")
+skeleton = NodePath("../CharacterModel/RootNode/Skeleton3D")
 character_body = NodePath("..")
