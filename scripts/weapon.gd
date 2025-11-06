@@ -23,6 +23,9 @@ class_name Weapon
 @export var hipfire_position: Vector3 = Vector3.ZERO
 @export var hipfire_rotation: Vector3 = Vector3.ZERO
 
+# Source scene reference for dropping
+var source_scene: PackedScene = null
+
 # State
 var current_ammo: int = 30
 var can_fire: bool = true

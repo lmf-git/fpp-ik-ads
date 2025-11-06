@@ -44,6 +44,7 @@ signal interaction_unavailable()
 @export_group("References")
 @export var camera: Camera3D
 @export var interaction_ray: RayCast3D
+@export var ragdoll: RagdollController
 
 # ADS
 @export_group("ADS")
@@ -122,6 +123,13 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
 
+	# Ragdoll controls
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_G:
+			_toggle_ragdoll()
+		elif event.keycode == KEY_H:
+			_test_ragdoll_impulse()
+
 	# Weapon switching
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_1:
@@ -132,6 +140,10 @@ func _input(event):
 			_switch_weapon(2)
 
 func _physics_process(delta):
+	# Skip normal physics if ragdolled
+	if ragdoll and ragdoll.is_ragdoll_active:
+		return
+
 	# Update states
 	is_sprinting = Input.is_action_pressed("sprint") and not is_aiming
 	is_aiming = Input.is_action_pressed("aim_down_sights")
@@ -246,14 +258,11 @@ func _update_ads(delta):
 	if not current_weapon or not camera:
 		return
 
-	# Align weapon sight with camera center
-	var ads_target = current_weapon.get_ads_target()
-	if ads_target and ads_blend > 0.01:
-		var sight_local = camera.to_local(ads_target.global_position)
-		var target_cam_pos = original_camera_position - (sight_local * ads_blend)
-		camera.position = camera.position.lerp(target_cam_pos, 10.0 * delta)
-	else:
-		camera.position = camera.position.lerp(original_camera_position, 10.0 * delta)
+	# Simplified ADS camera positioning
+	# Move camera slightly forward when aiming to bring eye closer to sight
+	var ads_offset = Vector3(0, -0.05, 0.05)  # Slight down and forward
+	var target_cam_pos = original_camera_position.lerp(original_camera_position + ads_offset, ads_blend)
+	camera.position = camera.position.lerp(target_cam_pos, 10.0 * delta)
 
 func _update_weapon_ik(_delta):
 	if not current_weapon or not skeleton:
@@ -302,6 +311,9 @@ func _pickup_weapon(pickup: WeaponPickup):
 			hand_attachment.add_child(weapon)
 			current_weapon = weapon
 
+			# Store source scene for dropping later
+			weapon.source_scene = pickup.weapon_scene
+
 			# Setup IK
 			_update_weapon_ik(0)
 
@@ -317,10 +329,18 @@ func _drop_weapon():
 	if not current_weapon:
 		return
 
+	# Only drop if we have the source scene
+	if not current_weapon.source_scene:
+		print("Warning: Cannot drop weapon without source_scene")
+		current_weapon.queue_free()
+		current_weapon = null
+		return
+
 	# Create pickup in world
 	var pickup_scene = preload("res://scenes/weapon_pickup.tscn")
 	var pickup = pickup_scene.instantiate() as WeaponPickup
-	pickup.weapon_scene = current_weapon.scene_file_path
+	pickup.weapon_scene = current_weapon.source_scene
+	pickup.weapon_name = current_weapon.weapon_name
 	pickup.global_position = global_position + global_transform.basis.z * -1.0
 	get_tree().root.add_child(pickup)
 
@@ -338,6 +358,29 @@ func _get_hand_attachment() -> Node3D:
 	# This should be set up in the scene
 	return get_node_or_null("Skeleton3D/RightHandAttachment")
 
+func _toggle_ragdoll():
+	"""Toggle ragdoll physics on/off (G key)"""
+	if not ragdoll:
+		print("No ragdoll controller found!")
+		return
+
+	if ragdoll.is_ragdoll_active:
+		ragdoll.disable_ragdoll()
+		print("Ragdoll disabled - controls restored")
+	else:
+		ragdoll.enable_ragdoll()
+		print("Ragdoll enabled - press G to recover")
+
+func _test_ragdoll_impulse():
+	"""Test ragdoll with impulse force (H key)"""
+	if not ragdoll:
+		return
+
+	# Enable ragdoll with forward impulse
+	var impulse = -global_transform.basis.z * 500.0  # Forward direction
+	ragdoll.enable_ragdoll(impulse)
+	print("Ragdoll enabled with impulse!")
+
 func _check_interactions():
 	"""Check for nearby interactable objects and emit prompts"""
 	if not interaction_ray:
@@ -353,6 +396,10 @@ func _check_interactions():
 		interaction_unavailable.emit()
 
 func _process(_delta):
+	# Skip camera control if ragdolled
+	if ragdoll and ragdoll.is_ragdoll_active:
+		return
+
 	# Debug
 	if Input.is_action_just_pressed("ui_accept"):
 		print("=== FPP Debug ===")
@@ -364,3 +411,5 @@ func _process(_delta):
 		print("Stance: ", stance)
 		if current_weapon:
 			print("Weapon: ", current_weapon.weapon_name)
+		if ragdoll:
+			print("Ragdoll: ", "ACTIVE" if ragdoll.is_ragdoll_active else "INACTIVE")

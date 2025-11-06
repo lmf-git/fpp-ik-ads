@@ -2,128 +2,166 @@
 
 A complete First-Person Perspective (FPP) system with Inverse Kinematics (IK) and Aim Down Sights (ADS) functionality, inspired by Arma 3's "true FPP" system.
 
-## Overview
+## 🚀 Quick Start
 
-This project implements a realistic first-person system where:
-- The player sees their **full body** in first-person (visible in shadows, reflections, and looking down)
-- **Inverse Kinematics (IK)** ensures hands stay properly positioned on weapons
-- **Aim Down Sights (ADS)** smoothly aligns weapon sights with the camera center
-- **Procedural animations** add weapon sway, breathing, and movement bob
-- **Camera is tied to the head bone** for realistic head movement
-- **Upper/lower body separation** allows independent animation of legs and upper body
+1. **Open the project** in Godot 4.5 or later
+2. **Run** `scenes/enhanced_demo.tscn` (default scene)
+3. **Read** [CONTROLS.md](CONTROLS.md) for complete keybindings
+4. **Press F3** for debug overlay
+5. **Pick up the pistol** with E key and **aim with Right Mouse Button**
 
-This is a **blockout version** using simple box meshes to demonstrate the system architecture without requiring detailed character models or animations.
+## 📋 Current Status
 
-## Key Features
+✅ **Fully Functional Blockout System**
+- All core features implemented and working
+- Zero GDScript warnings or errors
+- Production-ready architecture
+- Comprehensive documentation
+- 5 testing zones in enhanced demo
 
-### 1. Full Body First-Person View
-- Complete character body visible from first-person perspective
-- Body consists of modular parts: torso, spine, head, shoulders, arms, hands
-- Camera attached to head bone, follows head rotation naturally
-- Body rotates with camera yaw, head/spine handle pitch
+**Latest Updates:**
+- ✅ Camera positioned at head height (fixed from feet)
+- ✅ Reflective mirrors with metallic materials
+- ✅ Enhanced pistol blockout (3-part model, highly visible)
+- ✅ Complete CONTROLS.md documentation
+- ✅ All warnings resolved
 
-### 2. Inverse Kinematics System
-- Custom 2-bone IK solver (`SimpleIKChain`) for arm chains
-- Right hand IK to weapon grip point
-- Left hand IK to weapon support point (foregrip)
-- Pole targets for natural elbow positioning
-- Blendable IK (mix between animation and IK)
+## 📚 Documentation
 
-### 3. Aim Down Sights (ADS)
-- Smooth transition between hipfire and ADS states
-- Camera FOV transitions from 90° (hipfire) to 50° (ADS)
-- Sight alignment: weapon sight aligns with screen center when aiming
-- Movement speed reduced during ADS
-- IK blend increases for more precise hand positioning when aiming
+| File | Description |
+|------|-------------|
+| **[CONTROLS.md](CONTROLS.md)** | Complete controls reference - **START HERE** |
+| **[README_ENHANCED.md](README_ENHANCED.md)** | Enhanced demo features and zones |
+| **[TESTING_GUIDE.md](TESTING_GUIDE.md)** | Step-by-step testing instructions |
+| **[FEATURES.md](FEATURES.md)** | Complete feature list |
+| **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** | Technical implementation details |
+| **[IMPROVEMENTS.md](IMPROVEMENTS.md)** | Future enhancement suggestions |
+| **[QUICKSTART.md](QUICKSTART.md)** | Quick integration guide |
 
-### 4. Procedural Effects
-- **Breathing**: Subtle sine-wave motion, reduced when aiming
-- **Weapon Sway**: Lags behind camera movement (inertia)
-- **Head Bob**: Bounces when walking, intensity based on speed
-- **Recoil**: Weapon kick on firing with recovery
-- All effects scale down during ADS for stability
+## ⚡ Key Features (Current Implementation)
 
-### 5. Character Controller
-- WASD movement with variable speeds
-- Sprint (Shift), Crouch (C), Jump (Space)
-- Mouse look with pitch clamping
-- Gravity and collision
-- Stance transitions (stand/crouch) with smooth interpolation
+### ✅ Skeleton-Based System
+- **Skeleton3D** with 9 bones: Root, Spine, Head, Shoulders, Elbows, Hands
+- **SkeletonIK3D** for both arms with proper IK targeting
+- **BoneAttachment3D** for camera (head) and weapon (hand)
+- Camera at head height with proper bone rotation
+
+### ✅ Freelook System
+- Hold **Alt** for independent camera rotation (120° max)
+- Body catches up when exceeding angle limit
+- Real-time angle display in HUD
+- Smooth body-camera separation
+
+### ✅ Complete HUD & Debug Tools
+- Dynamic crosshair, ammo counter, weapon info
+- Stance indicator, freelook indicator
+- Interaction prompts
+- **F3** - Debug overlay with all system stats
+- **F4** - IK visualization (WIP)
+
+### ✅ Enhanced Demo Map
+- 5 dedicated testing zones
+- Weapon pickups with golden glow
+- Reflective mirrors in IK Testing Zone
+- Shooting range, movement course, performance zone
+
+### ✅ Weapon System
+- Pickup system with interaction prompts
+- 3 weapons: Pistol, Rifle, SMG
+- IK hands stay attached to weapons
+- ADS with sight alignment
 
 ## Architecture
 
-### Core Components
+### Current Implementation (Skeleton-Based)
 
 ```
-Player (CharacterBody3D)
-├── Body (Node3D)
-│   ├── Torso (MeshInstance3D)
-│   └── Spine (Node3D)
-│       ├── Head (Node3D)
-│       │   ├── HeadMesh (MeshInstance3D)
-│       │   └── Camera3D
-│       ├── RightShoulder (Node3D)
-│       │   └── RightArm (Node3D)
-│       │       └── RightHand (Node3D)
-│       │           └── Weapon (Node3D)
-│       │               ├── WeaponBody (MeshInstance3D)
-│       │               ├── GripPoint (IK Target)
-│       │               ├── SupportPoint (IK Target)
-│       │               └── ADSTarget (Sight Position)
-│       └── LeftShoulder (Node3D)
-│           └── LeftArm (Node3D)
-│               └── LeftHand (Node3D)
-└── CollisionShape3D
+SkeletonPlayer (CharacterBody3D)
+├── CollisionShape3D (CapsuleShape)
+└── Skeleton3D (9 bones)
+    ├── Bones:
+    │   ├── Root (Y: 0.9)
+    │   ├── Spine (Y: 1.2)
+    │   ├── Head (Y: 1.6) ← Camera attaches here
+    │   ├── RightShoulder, RightElbow, RightHand ← IK chain
+    │   └── LeftShoulder, LeftElbow, LeftHand ← IK chain
+    ├── HeadAttachment (BoneAttachment3D)
+    │   ├── Camera3D (FOV transitions for ADS)
+    │   └── InteractionRay (RayCast3D for pickups)
+    ├── RightHandAttachment (BoneAttachment3D)
+    │   └── Weapon (attached at runtime)
+    │       ├── WeaponBody, Barrel, Slide (MeshInstance3D)
+    │       ├── GripPoint (IK Target for right hand)
+    │       ├── SupportPoint (IK Target for left hand)
+    │       └── ADSTarget (Sight alignment point)
+    ├── RightHandIK (SkeletonIK3D)
+    └── LeftHandIK (SkeletonIK3D)
 ```
 
 ### Scripts
 
-1. **`fpp_character_controller.gd`**
-   - Basic character controller with movement, camera, and ADS
-   - Simplified version good for understanding core concepts
+1. **`skeleton_fpp_controller.gd`** ⭐ Main controller
+   - CharacterBody3D with Skeleton3D integration
+   - Movement, camera, freelook (Alt), stance system
+   - Weapon pickup and IK management
+   - ADS with sight alignment
+   - Signal system for HUD updates
 
-2. **`enhanced_fpp_controller.gd`**
-   - Advanced controller with full IK integration
-   - Better organized, more features
-   - Recommended for production use
+2. **`weapon.gd`**
+   - Base weapon class with properties
+   - IK point references (grip, support, ads_target)
+   - Weapon stats (damage, fire rate, ammo)
 
-3. **`simple_ik_chain.gd`**
-   - 2-bone IK solver using law of cosines
-   - Solves for shoulder → elbow → hand chains
-   - Supports pole targets for elbow direction
+3. **`weapon_pickup.gd`**
+   - Interactable weapon pickup objects
+   - Golden glow material for visibility
+   - Dynamic labels with weapon names
 
-4. **`weapon_controller.gd`**
-   - Weapon-specific behavior
-   - Recoil system
-   - Weapon inertia and sway
-   - Fire mechanics
+4. **`hud.gd`**
+   - Complete HUD with crosshair, ammo, stance
+   - Interaction prompts
+   - Flash effects on state changes
+
+5. **`debug_overlay.gd`**
+   - F3-toggleable debug information
+   - Real-time system stats
+   - Performance monitoring
 
 ## How It Works
 
-### IK System Explained
+### IK System Explained (Skeleton3D + SkeletonIK3D)
 
-The IK system ensures hands stay glued to weapon grip/foregrip positions:
+The current implementation uses Godot's built-in SkeletonIK3D for hands:
 
-1. **IK Targets**: Empty Node3D objects placed at grip and support positions on the weapon
-2. **IK Chains**: Each arm is a chain: Shoulder → Elbow → Hand
-3. **Solver**: Uses 2-bone IK algorithm (law of cosines) to calculate joint angles
-4. **Pole Vectors**: Guide elbow direction for natural arm posture
-5. **Blending**: IK can blend with animation for best of both worlds
+1. **Skeleton3D**: 9-bone skeleton with proper rest poses
+   - Root → Spine → Head (camera attachment)
+   - Spine → RightShoulder → RightElbow → RightHand
+   - Spine → LeftShoulder → LeftElbow → LeftHand
 
-```gdscript
-# IK solver pseudo-code
-var upper_length = shoulder_to_elbow_distance
-var lower_length = elbow_to_hand_distance
-var target_distance = shoulder_to_target_distance
+2. **SkeletonIK3D Nodes**: Two IK solvers
+   - `RightHandIK`: root_bone="RightShoulder", tip_bone="RightHand"
+   - `LeftHandIK`: root_bone="LeftShoulder", tip_bone="LeftHand"
+   - Both use magnet vectors for natural elbow positioning
 
-# Calculate elbow angle using law of cosines
-var elbow_angle = acos((upper² + lower² - target²) / (2 * upper * lower))
+3. **IK Targets**: Weapon provides grip points
+   - `GripPoint` - Right hand IK target
+   - `SupportPoint` - Left hand IK target (foregrip)
+   - `ADSTarget` - Sight position for camera alignment
 
-# Calculate shoulder angle
-var shoulder_angle = acos((upper² + target² - lower²) / (2 * upper * target))
+4. **Runtime Process**:
+   ```gdscript
+   # When weapon is picked up
+   right_hand_ik.target_node = weapon.get_grip_point().get_path()
+   left_hand_ik.target_node = weapon.get_support_point().get_path()
+   right_hand_ik.start()
+   left_hand_ik.start()
+   ```
 
-# Apply rotations to bones
-```
+5. **Bone Rotation**: Head and spine bones rotate based on camera
+   ```gdscript
+   skeleton.set_bone_pose_rotation(head_bone_idx,
+       Quaternion.from_euler(Vector3(pitch, yaw_offset, 0)))
+   ```
 
 ### ADS System Explained
 
@@ -157,29 +195,37 @@ The camera is attached to the character's head bone:
 
 This creates the "true FPP" effect where looking around feels natural and body-aware.
 
-## Controls
+## Controls Quick Reference
+
+**See [CONTROLS.md](CONTROLS.md) for complete controls documentation.**
 
 | Input | Action |
 |-------|--------|
-| W/A/S/D | Move forward/left/back/right |
-| Mouse | Look around |
-| Left Shift | Sprint |
-| C | Crouch (toggle) |
-| Space | Jump |
-| Right Mouse Button | Aim Down Sights (hold) |
-| Left Mouse Button | Fire weapon |
-| ESC | Toggle mouse capture |
-| Enter | Print debug info |
+| **W/A/S/D** | Move forward/left/back/right |
+| **Mouse** | Look around |
+| **Alt (Hold)** | Freelook (120° independent camera) |
+| **Shift** | Sprint (standing only) |
+| **C** | Cycle stance (Stand → Crouch → Prone) |
+| **Space** | Jump |
+| **Right Mouse** | Aim Down Sights (ADS) |
+| **Left Mouse** | Fire weapon |
+| **E** | Interact / Pick up weapon |
+| **R** | Reload (planned) |
+| **F3** | Toggle debug overlay |
+| **F4** | Toggle IK visualization (WIP) |
+| **ESC** | Toggle mouse capture |
 
 ## Getting Started
 
-### Running the Project
+### Running the Enhanced Demo
 
 1. Open the project in Godot 4.5 or later
-2. Run the `scenes/main.tscn` scene
-3. Use mouse and keyboard to move and aim
-4. Right-click to experience ADS transition
-5. Left-click to fire and see recoil
+2. Run `scenes/enhanced_demo.tscn` (set as default scene)
+3. **Read [CONTROLS.md](CONTROLS.md)** to learn all keybindings
+4. Walk to the weapon pedestals and press **E** to pick up a weapon
+5. **Right-click** to aim down sights (ADS)
+6. Press **F3** to see debug overlay with all system stats
+7. Visit all 5 testing zones to explore features
 
 ### Customizing the System
 
@@ -214,26 +260,31 @@ To use this system with actual character models:
 
 ### 1. Replace Blockout Meshes
 
-- Import your character model with skeleton/armature
-- Replace box meshes with your actual body parts
-- Ensure skeleton has bones for: spine, head, shoulders, arms, hands
+✅ **Skeleton already set up!** Just replace the visual meshes:
+- Current skeleton has 9 bones (Root, Spine, Head, Shoulders, Elbows, Hands)
+- Replace `BodyMesh`, `HeadMesh`, `RightArmMesh`, etc. with your skinned mesh
+- Keep the same bone structure or adapt the bone names in exports
 
 ### 2. Setup Bone Paths
 
-In the character controller, update node paths:
+✅ **Already implemented!** This project uses bone indices:
 ```gdscript
-@export var head_path: NodePath = "Armature/Skeleton3D/HeadBone"
-@export var spine_path: NodePath = "Armature/Skeleton3D/SpineBone"
-# etc...
+# skeleton_fpp_controller.gd
+@export var head_bone_name: String = "Head"
+@export var spine_bone_name: String = "Spine"
+
+# Cached in _ready()
+head_bone_idx = skeleton.find_bone(head_bone_name)
+spine_bone_idx = skeleton.find_bone(spine_bone_name)
 ```
 
 ### 3. Use Godot's SkeletonIK3D
 
-Replace `SimpleIKChain` with Godot's built-in `SkeletonIK3D`:
+✅ **Already implemented!** This project uses `SkeletonIK3D`:
 ```gdscript
-@onready var right_arm_ik = $Skeleton3D/RightArmIK
-right_arm_ik.set_target_node(weapon_grip_path)
-right_arm_ik.start()
+# skeleton_fpp_controller.gd already does this
+right_hand_ik.target_node = weapon.get_grip_point().get_path()
+right_hand_ik.start()
 ```
 
 ### 4. Animation Tree

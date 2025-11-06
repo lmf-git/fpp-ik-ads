@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://cpk8m3yx2nvts"]
+[gd_scene load_steps=17 format=3 uid="uid://cpk8m3yx2nvts"]
 
 [ext_resource type="Script" path="res://scripts/skeleton_fpp_controller.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ragdoll_controller.gd" id="2"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.3
@@ -18,13 +19,32 @@ size = Vector3(0.1, 0.4, 0.1)
 [sub_resource type="BoxMesh" id="BoxMesh_hand"]
 size = Vector3(0.12, 0.08, 0.2)
 
-[node name="SkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray")]
+[sub_resource type="CapsuleShape3D" id="PhysicsShape_head"]
+radius = 0.15
+height = 0.3
+
+[sub_resource type="BoxShape3D" id="PhysicsShape_spine"]
+size = Vector3(0.4, 0.6, 0.2)
+
+[sub_resource type="CapsuleShape3D" id="PhysicsShape_upper_arm"]
+radius = 0.05
+height = 0.3
+
+[sub_resource type="CapsuleShape3D" id="PhysicsShape_forearm"]
+radius = 0.04
+height = 0.3
+
+[sub_resource type="BoxShape3D" id="PhysicsShape_hand"]
+size = Vector3(0.12, 0.08, 0.2)
+
+[node name="SkeletonPlayer" type="CharacterBody3D" node_paths=PackedStringArray("skeleton", "right_hand_ik", "left_hand_ik", "camera", "interaction_ray", "ragdoll")]
 script = ExtResource("1")
 skeleton = NodePath("Skeleton3D")
 right_hand_ik = NodePath("Skeleton3D/RightHandIK")
 left_hand_ik = NodePath("Skeleton3D/LeftHandIK")
 camera = NodePath("Skeleton3D/HeadAttachment/Camera3D")
 interaction_ray = NodePath("Skeleton3D/HeadAttachment/Camera3D/InteractionRay")
+ragdoll = NodePath("RagdollController")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -122,3 +142,96 @@ interpolation = 0.5
 override_tip_basis = true
 use_magnet = true
 magnet = Vector3(0, -0.2, -0.5)
+
+[node name="PhysicalBoneSpine" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "Spine"
+simulate_physics = false
+mass = 25.0
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneSpine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+shape = SubResource("PhysicsShape_spine")
+
+[node name="PhysicalBoneHead" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "Head"
+simulate_physics = false
+mass = 4.5
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneHead"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+shape = SubResource("PhysicsShape_head")
+
+[node name="PhysicalBoneRightShoulder" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "RightShoulder"
+simulate_physics = false
+mass = 2.0
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneRightShoulder"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0.075, -0.15, 0)
+shape = SubResource("PhysicsShape_upper_arm")
+
+[node name="PhysicalBoneRightElbow" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "RightElbow"
+simulate_physics = false
+mass = 1.5
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneRightElbow"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0.05, -0.15, 0)
+shape = SubResource("PhysicsShape_forearm")
+
+[node name="PhysicalBoneRightHand" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "RightHand"
+simulate_physics = false
+mass = 0.4
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneRightHand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.1)
+shape = SubResource("PhysicsShape_hand")
+
+[node name="PhysicalBoneLeftShoulder" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "LeftShoulder"
+simulate_physics = false
+mass = 2.0
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneLeftShoulder"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.075, -0.15, 0)
+shape = SubResource("PhysicsShape_upper_arm")
+
+[node name="PhysicalBoneLeftElbow" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "LeftElbow"
+simulate_physics = false
+mass = 1.5
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneLeftElbow"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.05, -0.15, 0)
+shape = SubResource("PhysicsShape_forearm")
+
+[node name="PhysicalBoneLeftHand" type="PhysicalBone3D" parent="Skeleton3D"]
+bone_name = "LeftHand"
+simulate_physics = false
+mass = 0.4
+friction = 0.8
+bounce = 0.1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Skeleton3D/PhysicalBoneLeftHand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.1)
+shape = SubResource("PhysicsShape_hand")
+
+[node name="RagdollController" type="Node" parent="." node_paths=PackedStringArray("skeleton", "character_body")]
+script = ExtResource("2")
+skeleton = NodePath("../Skeleton3D")
+character_body = NodePath("..")
