@@ -11,7 +11,7 @@ signal ragdoll_disabled()
 @export var collision_layer: int = 1
 @export var collision_mask: int = 1
 
-@onready var skeleton: Skeleton3D = %Skeleton3D
+@onready var skeleton: Skeleton3D = get_node_or_null("../CharacterModel/RootNode/Skeleton3D")
 @onready var character_body: CharacterBody3D = get_parent()
 
 var is_ragdoll_active: bool = false
@@ -143,7 +143,7 @@ func _auto_generate_bones() -> void:
 
 	print("Auto-generated %d PhysicalBone3D nodes" % physical_bones.size())
 
-func _create_physical_bone(bone_idx: int, bone_name: StringName) -> void:
+func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	var physical_bone := PhysicalBone3D.new()
 	physical_bone.name = "PhysicalBone_" + bone_name.replace("characters3d.com___", "")
 	physical_bone.bone_name = bone_name

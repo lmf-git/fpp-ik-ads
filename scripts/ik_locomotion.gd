@@ -215,7 +215,7 @@ func update_locomotion(delta: float, velocity: Vector3, is_moving: bool, stance:
 		_update_damage_reaction(delta)
 		damage_reaction_time -= delta
 
-func _update_feet_ik(delta: float, velocity: Vector3, is_moving: bool):
+func _update_feet_ik(_delta: float, _velocity: Vector3, is_moving: bool):
 	"""Update foot IK targets for walking"""
 	if not left_foot_target or not right_foot_target or not character_body:
 		return
@@ -246,7 +246,7 @@ func _update_feet_ik(delta: float, velocity: Vector3, is_moving: bool):
 		left_foot_target.global_position = char_pos + char_basis * Vector3(-0.15, base_y - char_pos.y, 0)
 		right_foot_target.global_position = char_pos + char_basis * Vector3(0.15, base_y - char_pos.y, 0)
 
-func _update_arm_swing(delta: float, velocity: Vector3, is_moving: bool):
+func _update_arm_swing(_delta: float, _velocity: Vector3, is_moving: bool):
 	"""Update arm IK targets for natural swing"""
 	if not left_hand_target or not right_hand_target or not character_body:
 		return
@@ -409,7 +409,7 @@ func apply_damage_reaction(limb: String, strength: float = 1.0):
 
 	print("IKLocomotion: Damage reaction on ", limb, " (strength: ", strength, ")")
 
-func _update_damage_reaction(delta: float):
+func _update_damage_reaction(_delta: float):
 	"""Update damage reaction animation"""
 	var reaction_progress = 1.0 - (damage_reaction_time / 0.5)
 

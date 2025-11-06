@@ -11,9 +11,9 @@ signal camera_mode_changed(is_third_person: bool)
 @export var bone_config: BoneConfig
 
 @onready var character_body: CharacterBody3D = get_parent()
-@onready var skeleton: Skeleton3D = %Skeleton3D
-@onready var fps_camera: Camera3D = %FPSCamera
-@onready var third_person_camera: Camera3D = %ThirdPersonCamera
+@onready var skeleton: Skeleton3D = get_node_or_null("../CharacterModel/RootNode/Skeleton3D")
+@onready var fps_camera: Camera3D = get_node_or_null("../CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera")
+@onready var third_person_camera: Camera3D = get_node_or_null("../ThirdPersonCamera")
 
 # State
 var camera_x_rotation: float = 0.0  # Pitch
@@ -70,7 +70,12 @@ func _handle_mouse_look(relative: Vector2) -> void:
 
 ## Update body rotation to follow camera (with freelook support)
 func _update_body_rotation(delta: float) -> void:
+	var was_freelooking := is_freelooking
 	is_freelooking = Input.is_action_pressed("freelook")
+
+	# Emit signal when state changes
+	if was_freelooking != is_freelooking:
+		freelook_changed.emit(is_freelooking)
 
 	if is_freelooking:
 		# Freelook: camera rotates independently

@@ -23,13 +23,13 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var ik_locomotion: IKLocomotion = $IKLocomotion
 
 # ===== SCENE REFERENCES - Using unique names (%) for reliability =====
-@onready var skeleton: Skeleton3D = %Skeleton3D
-@onready var fps_camera: Camera3D = %FPSCamera
-@onready var third_person_camera: Camera3D = %ThirdPersonCamera
-@onready var interaction_ray: RayCast3D = %InteractionRay
-@onready var animation_player: AnimationPlayer = %AnimationPlayer
-@onready var right_hand_ik: SkeletonIK3D = %RightHandIK
-@onready var left_hand_ik: SkeletonIK3D = %LeftHandIK
+@onready var skeleton: Skeleton3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D")
+@onready var fps_camera: Camera3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera")
+@onready var third_person_camera: Camera3D = get_node_or_null("ThirdPersonCamera")
+@onready var interaction_ray: RayCast3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera/InteractionRay")
+@onready var animation_player: AnimationPlayer = get_node_or_null("CharacterModel/AnimationPlayer")
+@onready var right_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandIK")
+@onready var left_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/LeftHandIK")
 
 # ===== STATE =====
 var current_weapon: Weapon
@@ -105,10 +105,10 @@ func _process(delta: float) -> void:
 
 	# Update IK locomotion
 	if ik_locomotion and ik_locomotion.ik_mode_enabled and movement_controller:
-		var velocity := movement_controller.get_velocity()
+		var move_velocity := movement_controller.get_velocity()
 		var is_moving := movement_controller.is_moving()
 		var stance := movement_controller.get_stance()
-		ik_locomotion.update_locomotion(delta, velocity, is_moving, stance)
+		ik_locomotion.update_locomotion(delta, move_velocity, is_moving, stance)
 
 	# Check for interactions
 	_check_interactions()
@@ -180,11 +180,11 @@ func _on_jumped() -> void:
 	if ik_locomotion and ik_locomotion.ik_mode_enabled:
 		ik_locomotion.start_jump()
 
-func _on_freelook_changed(is_freelooking: bool) -> void:
+func _on_freelook_changed(_is_freelooking: bool) -> void:
 	# Could trigger head turn animations or effects
 	pass
 
-func _on_camera_mode_changed(is_third_person: bool) -> void:
+func _on_camera_mode_changed(_is_third_person: bool) -> void:
 	# Adjust HUD or other systems based on camera mode
 	pass
 
