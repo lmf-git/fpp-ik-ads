@@ -261,15 +261,16 @@ func _cycle_stance():
 
 func _update_body_rotation(delta):
 	if is_freelooking:
-		# In freelook: camera rotates independently, body stays put
+		# In freelook: camera rotates independently, head follows within neck limits
 		# Calculate offset between camera and body
 		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
 
-		# If offset gets too large, body follows
-		var max_freelook_rad = deg_to_rad(freelook_max_angle)
-		if abs(freelook_offset) > max_freelook_rad:
-			body_y_rotation = camera_y_rotation - sign(freelook_offset) * max_freelook_rad
-			freelook_offset = sign(freelook_offset) * max_freelook_rad
+		# Body starts turning when camera exceeds neck limit (so head stays within natural range)
+		var max_neck_yaw_rad = deg_to_rad(neck_max_yaw)
+		if abs(freelook_offset) > max_neck_yaw_rad:
+			# Body follows to keep head within neck limits
+			body_y_rotation = camera_y_rotation - sign(freelook_offset) * max_neck_yaw_rad
+			freelook_offset = sign(freelook_offset) * max_neck_yaw_rad
 	else:
 		# Normal mode: body follows camera immediately
 		body_y_rotation = lerp_angle(body_y_rotation, camera_y_rotation, body_rotation_speed * delta)
@@ -326,7 +327,6 @@ func _update_ads(delta):
 		if ads_target_node:
 			# Calculate where the weapon should be to align sight with camera
 			var camera_global_pos = camera.global_position
-			var camera_forward = -camera.global_transform.basis.z
 
 			# Get the weapon's current position
 			var weapon_root = current_weapon.get_parent()  # RightHandAttachment
@@ -374,7 +374,7 @@ func _update_weapon_ik(_delta):
 					left_hand_ik.target_node = ik_target.get_path()
 					left_hand_ik.start()
 
-func _get_or_create_ik_target(target_name: String, ik_node: SkeletonIK3D) -> Node3D:
+func _get_or_create_ik_target(target_name: String, _ik_node: SkeletonIK3D) -> Node3D:
 	"""Get existing IK target or create a new one"""
 	if not skeleton:
 		return null
