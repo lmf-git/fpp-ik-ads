@@ -123,7 +123,7 @@ func _on_weapon_changed(weapon: Weapon):
 	if weapon:
 		_flash_element(weapon_label)
 
-func _on_stance_changed(old_stance, new_stance):
+func _on_stance_changed(_old_stance, _new_stance):
 	_flash_element(stance_label)
 
 func _on_interaction_available(prompt: String):

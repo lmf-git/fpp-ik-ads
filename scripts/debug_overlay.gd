@@ -9,7 +9,7 @@ class_name DebugOverlay
 @onready var ik_visualization: Node3D = null
 
 var player: SkeletonFPPController
-var is_visible: bool = false
+var debug_visible: bool = false
 var show_ik_debug: bool = false
 
 func _ready():
@@ -25,16 +25,16 @@ func _input(event):
 	if event is InputEventKey and event.pressed:
 		# F3 - Toggle debug overlay
 		if event.keycode == KEY_F3:
-			is_visible = !is_visible
-			debug_panel.visible = is_visible
-			$PerformancePanel.visible = is_visible
+			debug_visible = !debug_visible
+			debug_panel.visible = debug_visible
+			$PerformancePanel.visible = debug_visible
 
 		# F4 - Toggle IK visualization
 		elif event.keycode == KEY_F4:
 			show_ik_debug = !show_ik_debug
 
 func _process(_delta):
-	if not is_visible or not player:
+	if not debug_visible or not player:
 		return
 
 	_update_debug_text()
