@@ -173,14 +173,15 @@ func enable_partial_ragdoll(limb: String, impulse: Vector3 = Vector3.ZERO):
 
 	print("Enabling partial ragdoll for ", limb, ": ", bone_names)
 
+	# Start physics simulation if not already running
+	var needs_physics_start = not _is_any_bone_simulating()
+	if needs_physics_start and skeleton:
+		skeleton.physical_bones_start_simulation()
+
 	# Transfer current poses to physical bones for seamless transition
 	_transfer_poses_to_physical_bones(bone_names)
 
-	# Start physics simulation for specific bones
-	if skeleton:
-		skeleton.physical_bones_start_simulation(bone_names)
-
-	# Enable collision for these bones
+	# Enable collision and physics for these specific bones
 	for bone in physical_bones:
 		if bone.bone_name in bone_names:
 			bone.collision_layer = 1
@@ -332,3 +333,10 @@ func disable_all_partial_ragdolls():
 		disable_partial_ragdoll("torso")
 	if head_ragdoll_active:
 		disable_partial_ragdoll("head")
+
+func _is_any_bone_simulating() -> bool:
+	"""Check if any physical bone currently has collision enabled (indicating active physics)"""
+	for bone in physical_bones:
+		if bone.collision_layer != 0 or bone.collision_mask != 0:
+			return true
+	return false
