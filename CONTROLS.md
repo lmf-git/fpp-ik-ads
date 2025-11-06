@@ -38,6 +38,8 @@
 |-----|--------|
 | **F3** | Toggle Debug Overlay (shows detailed system stats) |
 | **F4** | Toggle IK Visualization (work in progress) |
+| **G** | Toggle Ragdoll (enable/disable physics ragdoll) |
+| **H** | Test Ragdoll with Impulse (ragdoll with forward force) |
 
 ## Stance System
 
@@ -76,6 +78,28 @@ The skeleton-based IK system works automatically:
 - Head bone controls camera position (at eye level)
 - Spine bone partially rotates for natural upper body movement
 - IK adapts in real-time during movement, aiming, and stance changes
+
+## Ragdoll Physics System
+
+The character features a complete ragdoll system using PhysicalBone3D:
+
+**Controls:**
+- **G** - Toggle ragdoll on/off
+- **H** - Enable ragdoll with forward impulse (test feature)
+
+**Features:**
+- 8 physical bones: Spine, Head, RightShoulder, RightElbow, RightHand, LeftShoulder, LeftElbow, LeftHand
+- Realistic body part masses (Head: 4.5kg, Spine: 25kg, Arms: 2kg/1.5kg/0.4kg)
+- Physics materials with friction (0.8) and bounce (0.1)
+- Collision shapes for each body part
+- Automatic IK disable during ragdoll mode
+- Press **G** again to recover from ragdoll and regain control
+
+**Use Cases:**
+- Death/knockout animations
+- Physics-based reactions to explosions/impacts
+- Realistic fall damage
+- Environmental interactions (e.g., stumbling, getting hit)
 
 ## Testing the Demo
 
