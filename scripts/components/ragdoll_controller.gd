@@ -177,9 +177,9 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	physical_bone.friction = 1.0
 	physical_bone.bounce = 0.0
 
-	# Add moderate damping for stability without excessive stiffness
-	physical_bone.linear_damp = 1.0
-	physical_bone.angular_damp = 1.5
+	# Add strong damping to reduce jitter (especially for limbs)
+	physical_bone.linear_damp = 2.5
+	physical_bone.angular_damp = 3.5
 
 	# Disable collision by default
 	physical_bone.collision_layer = 0
@@ -202,25 +202,25 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 		return sphere
 	elif "hand" in name_lower:
 		var box := BoxShape3D.new()
-		box.size = Vector3(0.06, 0.08, 0.03)
+		box.size = Vector3(0.04, 0.06, 0.025)  # Smaller hands to reduce jitter
 		return box
 	elif "foot" in name_lower:
 		var box := BoxShape3D.new()
-		box.size = Vector3(0.08, 0.05, 0.15)
+		box.size = Vector3(0.06, 0.04, 0.12)  # Smaller feet to reduce jitter
 		return box
 	elif "spine" in name_lower or "hips" in name_lower:
 		var box := BoxShape3D.new()
 		box.size = Vector3(0.25, 0.2, 0.2) if "hips" in name_lower else Vector3(0.2, 0.3, 0.15)
 		return box
 	else:
-		# Default box for limbs (arms, legs, neck)
+		# Default box for limbs (arms, legs, neck) - made smaller to reduce collision jitter
 		var box := BoxShape3D.new()
 		if "arm" in name_lower:
-			box.size = Vector3(0.04, 0.18, 0.04)  # Thin vertical box for arms
+			box.size = Vector3(0.03, 0.14, 0.03)  # Thinner arms to prevent jitter
 		elif "leg" in name_lower:
-			box.size = Vector3(0.06, 0.22, 0.06)  # Thicker vertical box for legs
+			box.size = Vector3(0.045, 0.16, 0.045)  # Thinner legs to prevent jitter
 		else:
-			box.size = Vector3(0.05, 0.15, 0.05)  # Default box
+			box.size = Vector3(0.04, 0.12, 0.04)  # Smaller default box
 		return box
 
 func _get_bone_mass(bone_name: StringName) -> float:
@@ -396,3 +396,20 @@ func toggle_partial_ragdoll(limb: StringName) -> void:
 		disable_partial_ragdoll(limb)
 	else:
 		enable_partial_ragdoll(limb)
+
+## Check if any partial ragdoll is active
+func is_any_partial_ragdoll_active() -> bool:
+	return partial_ragdoll_limbs.size() > 0
+
+## Check specific limb ragdoll states (for HUD compatibility)
+var left_arm_ragdoll_active: bool:
+	get: return &"left_arm" in partial_ragdoll_limbs
+
+var right_arm_ragdoll_active: bool:
+	get: return &"right_arm" in partial_ragdoll_limbs
+
+var left_leg_ragdoll_active: bool:
+	get: return &"left_leg" in partial_ragdoll_limbs
+
+var right_leg_ragdoll_active: bool:
+	get: return &"right_leg" in partial_ragdoll_limbs

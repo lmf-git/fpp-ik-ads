@@ -152,14 +152,25 @@ func _check_interactions() -> void:
 		interaction_unavailable.emit()
 
 func _try_interact() -> void:
-	if not interaction_ray or not interaction_ray.is_colliding():
+	print("DEBUG: Interact requested!")
+
+	if not interaction_ray:
+		print("DEBUG: No interaction ray!")
+		return
+
+	if not interaction_ray.is_colliding():
+		print("DEBUG: InteractionRay not colliding with anything")
 		return
 
 	var collider := interaction_ray.get_collider()
+	print("DEBUG: InteractionRay hit: ", collider, " (type: ", collider.get_class(), ")")
 
 	# Handle weapon pickups
 	if collider is WeaponPickup:
+		print("DEBUG: Collider is WeaponPickup - attempting pickup")
 		_pickup_weapon(collider)
+	else:
+		print("DEBUG: Collider is NOT WeaponPickup")
 
 func _pickup_weapon(pickup: WeaponPickup) -> void:
 	if weapon_controller:
