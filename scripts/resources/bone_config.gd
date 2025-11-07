@@ -48,7 +48,7 @@ func get_bone_index(skeleton: Skeleton3D, bone_name: StringName) -> int:
 ## Get all main body bones for ragdoll generation
 func get_ragdoll_bones() -> Array[StringName]:
 	return [
-		hips, spine, spine1, neck, head,
+		hips, spine, neck, head,
 		l_shoulder, l_upper_arm, l_lower_arm, l_hand,
 		r_shoulder, r_upper_arm, r_lower_arm, r_hand,
 		l_upper_leg, l_lower_leg, l_foot,
