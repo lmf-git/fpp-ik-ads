@@ -163,25 +163,37 @@ func _get_interaction_prompt(interactable: Node) -> String:
 	return "[E] Interact"
 
 func _try_interact() -> void:
-	print("DEBUG: Interact requested!")
+	print("\n=== INTERACTION DEBUG ===")
+	print("Interact requested!")
 
 	if not interaction_ray:
-		print("DEBUG: No interaction ray!")
+		print("ERROR: No interaction ray!")
 		return
 
+	print("InteractionRay enabled: ", interaction_ray.enabled)
+	print("InteractionRay position: ", interaction_ray.global_position)
+	print("InteractionRay target: ", interaction_ray.target_position)
+	print("InteractionRay is_colliding: ", interaction_ray.is_colliding())
+
 	if not interaction_ray.is_colliding():
-		print("DEBUG: InteractionRay not colliding with anything")
+		print("InteractionRay not colliding with anything")
+		print("InteractionRay collision_mask: ", interaction_ray.collision_mask)
 		return
 
 	var collider := interaction_ray.get_collider()
-	print("DEBUG: InteractionRay hit: ", collider, " (type: ", collider.get_class(), ")")
+	print("InteractionRay hit: ", collider)
+	print("Collider type: ", collider.get_class())
+	print("Collider groups: ", collider.get_groups())
+	print("Is in 'interactable' group: ", collider.is_in_group("interactable"))
+	print("Is WeaponPickup type: ", collider is WeaponPickup)
 
 	# Handle weapon pickups
 	if collider is WeaponPickup:
-		print("DEBUG: Collider is WeaponPickup - attempting pickup")
+		print("SUCCESS: Collider is WeaponPickup - attempting pickup")
 		_pickup_weapon(collider)
 	else:
-		print("DEBUG: Collider is NOT WeaponPickup")
+		print("FAIL: Collider is NOT WeaponPickup")
+	print("=== END DEBUG ===\n")
 
 func _pickup_weapon(pickup: WeaponPickup) -> void:
 	if weapon_controller:
