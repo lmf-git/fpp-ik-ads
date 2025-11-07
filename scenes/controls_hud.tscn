@@ -42,6 +42,8 @@ theme_override_constants/margin_bottom = 12
 
 [node name="ControlsLabel" type="RichTextLabel" parent="ControlsPanel/MarginContainer"]
 layout_mode = 2
+theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 18
 bbcode_enabled = true
 text = "Controls loading..."
 fit_content = true
@@ -69,6 +71,8 @@ theme_override_constants/margin_bottom = 12
 
 [node name="DebugLabel" type="RichTextLabel" parent="DebugPanel/MarginContainer"]
 layout_mode = 2
+theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 18
 bbcode_enabled = true
 text = "Debug info loading..."
 fit_content = true

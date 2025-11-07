@@ -22,7 +22,7 @@ bounce = 0.0
 radius = 0.3
 height = 1.8
 
-[node name="CharacterSkeletonPlayer" type="CharacterBody3D"]
+[node name="CharacterSkeletonPlayer" type="CharacterBody3D" groups=["player"]]
 physics_material_override = SubResource("PhysicsMaterial_character")
 script = ExtResource("2")
 floor_stop_on_slope = true
@@ -49,7 +49,7 @@ bone_idx = 7
 
 [node name="FPSCamera" type="Camera3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment"]
 unique_name_in_owner = true
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.15, 0)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.15, 0)
 
 [node name="InteractionRay" type="RayCast3D" parent="CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera"]
 unique_name_in_owner = true

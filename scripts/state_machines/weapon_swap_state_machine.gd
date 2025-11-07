@@ -45,6 +45,7 @@ func _process(delta: float) -> void:
 ## Register a state
 func register_state(state_name: StringName, state: WeaponSwapState) -> void:
 	states[state_name] = state
+	state.name = state_name  # Set node name to match state identifier
 	state.state_machine = self
 	state.weapon_controller = weapon_controller
 	state.state_finished.connect(_on_state_finished)
