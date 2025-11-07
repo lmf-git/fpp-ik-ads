@@ -49,7 +49,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 1.0,
 		"linear_limit": 0.003,
 		"angular_limits": {"x": [140, 0], "y": [20, -20], "z": [20, -20]},
-		"softness": {"x": 0.95, "y": 0.95, "z": 0.95}  # Very soft - floppy arms
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -57,7 +57,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.6,
 		"linear_limit": 0.008,
 		"angular_limits": {"x": [130, 0], "y": [15, -15], "z": [15, -15]},
-		"softness": {"x": 0.9, "y": 0.9, "z": 0.9}  # Very soft - floppy legs
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -65,7 +65,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 2.0,
 		"linear_limit": 0.002,
 		"angular_limits": {"x": [45, -30], "y": [40, -40], "z": [30, -30]},
-		"softness": {"x": 0.95, "y": 0.95, "z": 0.95}  # Very soft
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring
 	},
 	&"upper_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -73,7 +73,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 1.5,
 		"linear_limit": 0.004,
 		"angular_limits": {"x": [120, -40], "y": [90, -45], "z": [50, -50]},
-		"softness": {"x": 0.95, "y": 0.95, "z": 0.95}  # Very soft
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -105,7 +105,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.98,
 		"linear_limit": 0.002,
 		"angular_limits": {"x": [20, -30], "y": [15, -15], "z": [10, -10]},
-		"softness": {"x": 0.98, "y": 0.98, "z": 0.98}  # Very floppy hands
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - limp hands
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -113,7 +113,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.95,
 		"linear_limit": 0.005,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
-		"softness": {"x": 0.85, "y": 0.85, "z": 0.85}  # Soft feet (but not as floppy as hands)
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls
 	}
 }
 
@@ -215,23 +215,23 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	var final_angular: float
 
 	if "hand" in name_lower or "neck" in name_lower:
-		# Hands and neck: very floppy initially, moderate stiffness finally
-		initial_linear = 0.1
-		initial_angular = 0.2
-		final_linear = 1.5
-		final_angular = 2.0
-	elif "head" in name_lower:
-		# Head: moderate floppy, high stiffness (important for stability)
-		initial_linear = 0.3
-		initial_angular = 0.5
+		# Hands and neck: moderate damping to prevent jitter, then stiffen
+		initial_linear = 1.0
+		initial_angular = 1.5
 		final_linear = 3.0
 		final_angular = 4.0
+	elif "head" in name_lower:
+		# Head: higher damping for stability (no jitter on ground contact)
+		initial_linear = 2.0
+		initial_angular = 2.5
+		final_linear = 5.0
+		final_angular = 6.0
 	else:
-		# Arms and legs: low initial damping, high final damping
-		initial_linear = 0.2
-		initial_angular = 0.3
-		final_linear = 2.5
-		final_angular = 3.5
+		# Arms and legs: moderate damping to reduce jitter on impact
+		initial_linear = 1.5
+		initial_angular = 2.0
+		final_linear = 4.0
+		final_angular = 5.0
 
 	# Set initial damping (floppy ragdoll)
 	physical_bone.linear_damp = initial_linear
@@ -261,27 +261,36 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 		sphere.radius = 0.08
 		return sphere
 	elif "hand" in name_lower:
-		var box := BoxShape3D.new()
-		box.size = Vector3(0.04, 0.06, 0.025)  # Smaller hands to reduce jitter
-		return box
+		# Capsule for smooth collisions
+		var capsule := CapsuleShape3D.new()
+		capsule.radius = 0.02
+		capsule.height = 0.06
+		return capsule
 	elif "foot" in name_lower:
-		var box := BoxShape3D.new()
-		box.size = Vector3(0.06, 0.04, 0.12)  # Smaller feet to reduce jitter
-		return box
+		# Capsule for smooth ground contact
+		var capsule := CapsuleShape3D.new()
+		capsule.radius = 0.03
+		capsule.height = 0.10
+		return capsule
 	elif "spine" in name_lower or "hips" in name_lower:
+		# Keep boxes for torso (more stable)
 		var box := BoxShape3D.new()
 		box.size = Vector3(0.25, 0.2, 0.2) if "hips" in name_lower else Vector3(0.2, 0.3, 0.15)
 		return box
 	else:
-		# Default box for limbs (arms, legs, neck) - made smaller to reduce collision jitter
-		var box := BoxShape3D.new()
+		# Capsules for limbs (arms, legs, neck) - smooth collisions, no jitter
+		var capsule := CapsuleShape3D.new()
 		if "arm" in name_lower:
-			box.size = Vector3(0.03, 0.14, 0.03)  # Thinner arms to prevent jitter
+			capsule.radius = 0.025
+			capsule.height = 0.15
 		elif "leg" in name_lower:
-			box.size = Vector3(0.045, 0.16, 0.045)  # Thinner legs to prevent jitter
+			capsule.radius = 0.035
+			capsule.height = 0.18
 		else:
-			box.size = Vector3(0.04, 0.12, 0.04)  # Smaller default box
-		return box
+			# Default capsule for neck/other
+			capsule.radius = 0.03
+			capsule.height = 0.12
+		return capsule
 
 func _get_bone_mass(bone_name: StringName) -> float:
 	var name_lower := String(bone_name).to_lower()

@@ -165,8 +165,11 @@ func _update_head_rotation() -> void:
 		return
 
 	# Calculate head rotation (compensate for camera-body offset)
-	var head_pitch := -camera_x_rotation  # Negate for character model orientation
-	var head_yaw := freelook_offset
+	# Camera now looks down -Y, head bone points up +Y
+	# Pitch: camera_x_rotation maps to head X rotation (no negation needed)
+	# Yaw: freelook_offset maps to head Y rotation (negate for correct direction)
+	var head_pitch := camera_x_rotation
+	var head_yaw := -freelook_offset
 
 	# Apply neck limits
 	head_pitch = clampf(
