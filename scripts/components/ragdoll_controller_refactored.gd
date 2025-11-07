@@ -8,8 +8,9 @@ signal ragdoll_enabled()
 signal ragdoll_disabled()
 
 @export var bone_config: BoneConfig
-@export var collision_layer: int = 1
-@export var collision_mask: int = 1
+# Collision setup: Layer 3 for ragdoll, Mask 1 for environment only (prevents self-collision)
+@export var collision_layer: int = 4  # Layer 3 (2^2 = 4) - ragdoll layer
+@export var collision_mask: int = 1   # Layer 1 - only collide with environment, not other ragdoll bones
 
 @onready var skeleton: Skeleton3D = get_node_or_null("../CharacterModel/RootNode/Skeleton3D")
 @onready var character_body: CharacterBody3D = get_parent()
@@ -158,6 +159,16 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	physical_bone.mass = _get_bone_mass(bone_name)
 	physical_bone.friction = 1.0
 	physical_bone.bounce = 0.0
+
+	# Add damping to reduce jitter and make ragdoll more stable
+	physical_bone.linear_damp = 0.5
+	physical_bone.angular_damp = 0.5
+
+	# Enable continuous collision detection for fast-moving bones
+	physical_bone.continuous_cd = true
+
+	# Limit maximum velocity to prevent explosions
+	physical_bone.max_contacts_reported = 4
 
 	# Disable collision by default
 	physical_bone.collision_layer = 0
