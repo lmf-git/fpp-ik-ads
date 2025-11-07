@@ -103,14 +103,25 @@ func pickup_weapon(pickup: WeaponPickup) -> void:
 
 ## Called by state machine during SWITCHING phase
 func perform_weapon_switch(pickup: WeaponPickup, old_weapon: Weapon) -> void:
+	print("\n=== WEAPON SWITCH DEBUG ===")
+	print("Pickup: ", pickup)
+	print("Pickup weapon_scene: ", pickup.weapon_scene if pickup else "null")
+	print("Old weapon: ", old_weapon)
+	print("right_hand_attachment: ", right_hand_attachment)
+
 	# Drop old weapon
 	if old_weapon:
 		_drop_weapon(old_weapon)
 
 	# Instantiate new weapon
 	if pickup and pickup.weapon_scene:
+		print("Instantiating weapon from scene...")
 		var new_weapon = pickup.weapon_scene.instantiate() as Weapon
+		print("New weapon instance: ", new_weapon)
+		print("New weapon type: ", new_weapon.get_class() if new_weapon else "null")
+
 		if new_weapon and right_hand_attachment:
+			print("Adding weapon to right hand attachment...")
 			right_hand_attachment.add_child(new_weapon)
 			new_weapon.position = Vector3.ZERO
 			new_weapon.rotation = Vector3.ZERO
@@ -121,9 +132,19 @@ func perform_weapon_switch(pickup: WeaponPickup, old_weapon: Weapon) -> void:
 
 			weapon_changed.emit(new_weapon, old_weapon)
 			print("WeaponController: Equipped ", new_weapon.weapon_name)
+			print("Weapon global position: ", new_weapon.global_position)
+			print("Weapon visible: ", new_weapon.visible)
+		else:
+			print("ERROR: Failed to equip weapon!")
+			print("  new_weapon is null: ", new_weapon == null)
+			print("  right_hand_attachment is null: ", right_hand_attachment == null)
 
 		# Remove pickup from world
+		print("Removing pickup from world...")
 		pickup.queue_free()
+	else:
+		print("ERROR: pickup or pickup.weapon_scene is null!")
+	print("=== END WEAPON SWITCH DEBUG ===\n")
 
 ## Detach weapon from character without dropping it (for hotswapping between slots)
 func _detach_weapon(weapon: Weapon) -> void:
