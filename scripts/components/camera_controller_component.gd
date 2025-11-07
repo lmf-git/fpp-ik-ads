@@ -168,9 +168,9 @@ func _update_head_rotation() -> void:
 	# Camera looks along -Z in head local space (after -90° Y rotation)
 	# Head bone points up +Y in skeleton space
 	# Pitch: negate camera_x_rotation for correct up/down direction
-	# Yaw: negate freelook_offset for correct left/right direction
+	# Yaw: use freelook_offset directly (positive = turn right, head turns right)
 	var head_pitch := -camera_x_rotation
-	var head_yaw := -freelook_offset
+	var head_yaw := freelook_offset
 
 	# Apply neck limits
 	head_pitch = clampf(
