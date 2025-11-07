@@ -139,10 +139,10 @@ func _physics_process(delta: float) -> void:
 
 	# Update damping for all physical bones
 	for bone in physical_bones:
-		var bone_name := bone.bone_name
+		var bone_name: StringName = bone.bone_name
 		if bone_name in bone_initial_damping and bone_name in bone_final_damping:
-			var initial := bone_initial_damping[bone_name]
-			var final := bone_final_damping[bone_name]
+			var initial: Vector2 = bone_initial_damping[bone_name]
+			var final: Vector2 = bone_final_damping[bone_name]
 
 			# Lerp from initial (floppy) to final (stiff)
 			bone.linear_damp = lerpf(initial.x, final.x, damping_factor)
@@ -354,9 +354,9 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 
 	# Reset all bones to initial (low) damping
 	for bone in physical_bones:
-		var bone_name := bone.bone_name
+		var bone_name: StringName = bone.bone_name
 		if bone_name in bone_initial_damping:
-			var initial := bone_initial_damping[bone_name]
+			var initial: Vector2 = bone_initial_damping[bone_name]
 			bone.linear_damp = initial.x
 			bone.angular_damp = initial.y
 
