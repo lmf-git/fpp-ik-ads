@@ -9,12 +9,12 @@ signal camera_mode_changed(is_third_person: bool)
 
 # Constants for spine/head coordination
 const SPINE_PITCH_FOLLOW_RATIO: float = 0.3  # How much spine follows head pitch (30%)
-const SPINE_YAW_FOLLOW_RATIO: float = 0.5    # How much spine follows head yaw (50%)
+const SPINE_YAW_FOLLOW_RATIO: float = 0.25   # How much spine follows head yaw (25%) - head leads more
 const THIRD_PERSON_CAMERA_HEIGHT: float = 3.0  # Height above character
 const THIRD_PERSON_CAMERA_DISTANCE: float = 5.0  # Distance behind character
 
 # Third-person camera lag/sway constants
-const THIRD_PERSON_TURN_DEADZONE: float = 0.15  # Radians (~8.5°) - head turns before body
+const THIRD_PERSON_TURN_DEADZONE: float = 0.35  # Radians (~20°) - head turns before body
 const THIRD_PERSON_CAMERA_LAG: float = 4.0  # How fast camera catches up (lower = more lag)
 const THIRD_PERSON_HEAD_TURN_SPEED: float = 8.0  # How fast head aims before body follows
 const THIRD_PERSON_BODY_CATCH_UP: float = 2.5  # How fast body catches up to camera
