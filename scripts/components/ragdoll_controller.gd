@@ -33,15 +33,15 @@ const JOINT_CONFIGS := {
 		"angular_damp": 8.0,
 		"linear_limit": 0.001,
 		"angular_limits": {"x": [15, -5], "y": [40, -40], "z": [10, -10]},
-		"softness": {"x": 0.8, "y": 0.8, "z": 0.9}
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - prevents glitching
 	},
 	&"neck": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
 		"linear_damp": 8.0,
 		"angular_damp": 10.0,
-		"linear_limit": 0.0005,
-		"angular_limits": {"x": [10, -5], "y": [15, -15], "z": [3, -3]},
-		"softness": {"x": 0.9, "y": 0.9, "z": 0.95}
+		"linear_limit": 0.0003,  # Tighter to prevent stretching
+		"angular_limits": {"x": [8, -8], "y": [12, -12], "z": [5, -5]},  # Tighter to prevent extreme angles
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - prevents head glitching
 	},
 	&"lower_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -257,9 +257,11 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 	var name_lower := String(bone_name).to_lower()
 
 	if "head" in name_lower:
-		var sphere := SphereShape3D.new()
-		sphere.radius = 0.08
-		return sphere
+		# Capsule for head - more stable than sphere, less rolling/glitching
+		var capsule := CapsuleShape3D.new()
+		capsule.radius = 0.06  # Smaller to prevent overlap with neck
+		capsule.height = 0.12
+		return capsule
 	elif "hand" in name_lower:
 		# Capsule for smooth collisions
 		var capsule := CapsuleShape3D.new()
@@ -295,7 +297,7 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 func _get_bone_mass(bone_name: StringName) -> float:
 	var name_lower := String(bone_name).to_lower()
 
-	if "head" in name_lower: return 4.5
+	if "head" in name_lower: return 6.0  # Increased for stability (prevents glitching on impact)
 	if "spine" in name_lower or "hips" in name_lower: return 25.0
 	if "upper_arm" in name_lower or "shoulder" in name_lower: return 2.0
 	if "lower_arm" in name_lower: return 1.5
