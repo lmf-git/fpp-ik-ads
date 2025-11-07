@@ -164,9 +164,6 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	physical_bone.linear_damp = 0.5
 	physical_bone.angular_damp = 0.5
 
-	# Limit maximum velocity to prevent explosions
-	physical_bone.max_contacts_reported = 4
-
 	# Disable collision by default
 	physical_bone.collision_layer = 0
 	physical_bone.collision_mask = 0
