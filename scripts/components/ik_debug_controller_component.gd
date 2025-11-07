@@ -20,8 +20,14 @@ var target_names: Array[String] = ["Left Hand", "Right Hand", "Left Foot", "Righ
 var input_controller: InputControllerComponent = null
 
 func _ready() -> void:
+	# Get IKLocomotion reference from parent if not assigned
 	if not ik_locomotion:
-		push_error("IKDebugController: IKLocomotion not assigned!")
+		var parent = get_parent()
+		if parent:
+			ik_locomotion = parent.get_node_or_null("IKLocomotion")
+
+	if not ik_locomotion:
+		push_error("IKDebugController: IKLocomotion not found!")
 		return
 
 	# Cache input controller reference

@@ -276,7 +276,7 @@ func _on_prone_state_changed(is_supine: bool) -> void:
 		print("Character: Prone state -> STOMACH")
 	# IK system will handle the transition automatically based on stance
 
-func _on_weapon_changed(new_weapon: Weapon, old_weapon: Weapon) -> void:
+func _on_weapon_changed(new_weapon: Weapon, _old_weapon: Weapon) -> void:
 	# Update current weapon reference
 	current_weapon = new_weapon
 	weapon_changed.emit(new_weapon)

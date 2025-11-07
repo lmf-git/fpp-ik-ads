@@ -83,7 +83,7 @@ func _create_ik_targets() -> void:
 
 	print("WeaponController: Created IK targets")
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if current_weapon:
 		_update_weapon_ik()
 		_apply_procedural_offsets()
@@ -240,7 +240,6 @@ func update_ads(delta: float, is_aiming: bool) -> void:
 
 	# Position weapon so ADS target aligns with camera center
 	var camera_pos := fps_camera.global_position
-	var camera_forward := -fps_camera.global_transform.basis.z
 
 	# Calculate where weapon should be
 	var weapon_root := current_weapon.get_parent() as Node3D
