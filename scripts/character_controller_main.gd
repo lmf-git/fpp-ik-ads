@@ -140,17 +140,37 @@ func _process(delta: float) -> void:
 
 ## ===== INTERACTION SYSTEM (like GTA's prompt system) =====
 
+var current_interactable: Node = null  # Track what we're currently looking at
+
 func _check_interactions() -> void:
 	if not interaction_ray or not interaction_ray.is_colliding():
+		# Clear current interactable
+		if current_interactable and current_interactable.has_method("set_in_range"):
+			current_interactable.set_in_range(false)
+		current_interactable = null
 		interaction_unavailable.emit()
 		return
 
 	var collider := interaction_ray.get_collider()
 	if collider and collider.is_in_group("interactable"):
+		# Notify new interactable
+		if collider != current_interactable:
+			# Clear previous
+			if current_interactable and current_interactable.has_method("set_in_range"):
+				current_interactable.set_in_range(false)
+			# Set new
+			current_interactable = collider
+			if current_interactable.has_method("set_in_range"):
+				current_interactable.set_in_range(true)
+
 		# Extract interaction prompt from the interactable object
 		var prompt: String = _get_interaction_prompt(collider)
 		interaction_available.emit(prompt)
 	else:
+		# Clear current interactable
+		if current_interactable and current_interactable.has_method("set_in_range"):
+			current_interactable.set_in_range(false)
+		current_interactable = null
 		interaction_unavailable.emit()
 
 ## Get interaction prompt text from an interactable object
