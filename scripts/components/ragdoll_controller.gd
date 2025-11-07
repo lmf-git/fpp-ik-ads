@@ -48,7 +48,7 @@ const JOINT_CONFIGS := {
 		"linear_damp": 0.5,
 		"angular_damp": 1.0,
 		"linear_limit": 0.003,
-		"angular_limits": {"x": [140, 0], "y": [20, -20], "z": [20, -20]},
+		"angular_limits": {"x": [150, 0], "y": [45, -45], "z": [45, -45]},  # Wider limits for elbow twist
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls
 	},
 	&"lower_leg": {
@@ -56,7 +56,7 @@ const JOINT_CONFIGS := {
 		"linear_damp": 0.3,
 		"angular_damp": 0.6,
 		"linear_limit": 0.008,
-		"angular_limits": {"x": [130, 0], "y": [15, -15], "z": [15, -15]},
+		"angular_limits": {"x": [140, 0], "y": [30, -30], "z": [30, -30]},  # Wider limits for knee twist
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls
 	},
 	&"shoulder": {
@@ -64,7 +64,7 @@ const JOINT_CONFIGS := {
 		"linear_damp": 1.0,
 		"angular_damp": 2.0,
 		"linear_limit": 0.002,
-		"angular_limits": {"x": [45, -30], "y": [40, -40], "z": [30, -30]},
+		"angular_limits": {"x": [180, -180], "y": [180, -180], "z": [180, -180]},  # Allow full rotation - arms can flop to sides
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring
 	},
 	&"upper_arm": {
@@ -72,7 +72,7 @@ const JOINT_CONFIGS := {
 		"linear_damp": 0.8,
 		"angular_damp": 1.5,
 		"linear_limit": 0.004,
-		"angular_limits": {"x": [120, -40], "y": [90, -45], "z": [50, -50]},
+		"angular_limits": {"x": [180, -180], "y": [180, -180], "z": [180, -180]},  # Allow full rotation - natural fall
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring
 	},
 	&"spine": {
@@ -96,15 +96,15 @@ const JOINT_CONFIGS := {
 		"linear_damp": 0.5,
 		"angular_damp": 0.8,
 		"linear_limit": 0.012,
-		"angular_limits": {"x": [90, -30], "y": [40, -40], "z": [30, -30]},
-		"softness": {"x": 0.9, "y": 0.9, "z": 0.9}  # Very soft legs
+		"angular_limits": {"x": [120, -45], "y": [60, -60], "z": [45, -45]},  # Wider limits for natural fall
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls (was 0.9!)
 	},
 	&"hand": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
 		"linear_damp": 0.9,
 		"angular_damp": 0.98,
 		"linear_limit": 0.002,
-		"angular_limits": {"x": [20, -30], "y": [15, -15], "z": [10, -10]},
+		"angular_limits": {"x": [60, -60], "y": [45, -45], "z": [45, -45]},  # Wider limits for wrist freedom
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - limp hands
 	},
 	&"foot": {
@@ -112,7 +112,7 @@ const JOINT_CONFIGS := {
 		"linear_damp": 0.9,
 		"angular_damp": 0.95,
 		"linear_limit": 0.005,
-		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
+		"angular_limits": {"x": [45, -45], "y": [30, -30], "z": [30, -30]},  # Wider limits for ankle freedom
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}  # No spring - stays where it falls
 	}
 }
@@ -215,21 +215,21 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	var final_angular: float
 
 	if "hand" in name_lower or "neck" in name_lower:
-		# Hands and neck: moderate damping to prevent jitter, then stiffen
-		initial_linear = 1.0
-		initial_angular = 1.5
+		# Hands and neck: low initial damping for free fall, then stiffen
+		initial_linear = 0.3
+		initial_angular = 0.5
 		final_linear = 3.0
 		final_angular = 4.0
 	elif "head" in name_lower:
-		# Head: higher damping for stability (no jitter on ground contact)
-		initial_linear = 2.0
-		initial_angular = 2.5
+		# Head: moderate damping for stability
+		initial_linear = 1.0
+		initial_angular = 1.5
 		final_linear = 5.0
 		final_angular = 6.0
 	else:
-		# Arms and legs: moderate damping to reduce jitter on impact
-		initial_linear = 1.5
-		initial_angular = 2.0
+		# Arms and legs: low initial damping for natural falling
+		initial_linear = 0.5
+		initial_angular = 0.8
 		final_linear = 4.0
 		final_angular = 5.0
 
