@@ -8,7 +8,7 @@ class_name CharacterControllerMain
 # ===== SIGNALS - Event-driven communication (like Outer Wilds) =====
 signal weapon_changed(weapon: Weapon)
 signal stance_changed(old_stance: int, new_stance: int)
-signal interaction_available(interactable: Node)
+signal interaction_available(prompt: String)
 signal interaction_unavailable()
 signal damage_taken(amount: float, limb: StringName)
 
@@ -147,9 +147,20 @@ func _check_interactions() -> void:
 
 	var collider := interaction_ray.get_collider()
 	if collider and collider.is_in_group("interactable"):
-		interaction_available.emit(collider)
+		# Extract interaction prompt from the interactable object
+		var prompt: String = _get_interaction_prompt(collider)
+		interaction_available.emit(prompt)
 	else:
 		interaction_unavailable.emit()
+
+## Get interaction prompt text from an interactable object
+func _get_interaction_prompt(interactable: Node) -> String:
+	# Check if it's a weapon pickup
+	if interactable is WeaponPickup:
+		return "[E] Pick up %s" % interactable.weapon_name
+
+	# Generic fallback
+	return "[E] Interact"
 
 func _try_interact() -> void:
 	print("DEBUG: Interact requested!")
