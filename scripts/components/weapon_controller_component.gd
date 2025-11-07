@@ -195,18 +195,28 @@ func _setup_weapon_ik(weapon: Weapon) -> void:
 		print("WeaponController: Left hand IK configured")
 
 func _update_weapon_ik() -> void:
-	if not current_weapon:
+	if not current_weapon or not fps_camera:
 		return
 
-	var grip_point = current_weapon.get_node_or_null("GripPoint")
+	# Position hands in front of camera for aiming pose
+	# Right hand: dominant hand holds weapon grip
+	if right_hand_ik_target:
+		# Position right hand in front of camera (weapon will follow via BoneAttachment)
+		var camera_forward := -fps_camera.global_transform.basis.z
+		var camera_right := fps_camera.global_transform.basis.x
+		var camera_down := -fps_camera.global_transform.basis.y
+
+		# Right hand position: slightly right, slightly down, in front of camera
+		var right_hand_offset := camera_right * 0.15 + camera_down * 0.1 + camera_forward * 0.3
+		right_hand_ik_target.global_position = fps_camera.global_position + right_hand_offset
+
+		# Orient hand to point forward
+		right_hand_ik_target.global_transform.basis = fps_camera.global_transform.basis
+
+	# Left hand: support hand positions based on weapon's support point
 	var support_point = current_weapon.get_node_or_null("SupportPoint")
-
-	# Update right hand target (grip)
-	if right_hand_ik_target and grip_point:
-		right_hand_ik_target.global_transform = grip_point.global_transform
-
-	# Update left hand target (support)
 	if left_hand_ik_target and support_point:
+		# Left hand follows weapon's support point
 		left_hand_ik_target.global_transform = support_point.global_transform
 
 func _apply_procedural_offsets() -> void:
