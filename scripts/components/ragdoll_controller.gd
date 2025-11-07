@@ -39,11 +39,11 @@ const JOINT_CONFIGS := {
 	},
 	&"lower_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 2.0,
-		"angular_damp": 3.0,
-		"linear_limit": 0.002,
-		"angular_limits": {"x": [140, 0], "y": [10, -10], "z": [5, -5]},
-		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
+		"linear_damp": 4.0,
+		"angular_damp": 6.0,
+		"linear_limit": 0.001,
+		"angular_limits": {"x": [130, 0], "y": [8, -8], "z": [8, -8]},
+		"softness": {"x": 0.4, "y": 0.5, "z": 0.5}
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -55,19 +55,19 @@ const JOINT_CONFIGS := {
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 5.0,
-		"angular_damp": 8.0,
-		"linear_limit": 0.001,
-		"angular_limits": {"x": [1, -1], "y": [1, -1], "z": [1, -1]},
-		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
+		"linear_damp": 8.0,
+		"angular_damp": 12.0,
+		"linear_limit": 0.0005,
+		"angular_limits": {"x": [30, -20], "y": [20, -20], "z": [15, -15]},
+		"softness": {"x": 0.5, "y": 0.5, "z": 0.5}
 	},
 	&"upper_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 2.0,
-		"angular_damp": 3.0,
-		"linear_limit": 0.003,
-		"angular_limits": {"x": [120, -20], "y": [90, -30], "z": [45, -45]},
-		"softness": {"x": 0.7, "y": 0.7, "z": 0.8}
+		"linear_damp": 4.0,
+		"angular_damp": 6.0,
+		"linear_limit": 0.002,
+		"angular_limits": {"x": [90, -30], "y": [75, -30], "z": [30, -30]},
+		"softness": {"x": 0.6, "y": 0.6, "z": 0.7}
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -159,7 +159,7 @@ func _setup_collision_exceptions() -> void:
 			bone_a.add_collision_exception_with(bone_b)
 			# Note: add_collision_exception_with is mutual, so we don't need to call it both ways
 
-	print("Set up %d collision exceptions to prevent ragdoll self-collision" % (physical_bones.size() * (physical_bones.size() - 1) / 2))
+	print("Set up %d collision exceptions to prevent ragdoll self-collision" % (physical_bones.size() * (physical_bones.size() - 1) / 2.0))
 
 func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	var physical_bone := PhysicalBone3D.new()
@@ -177,9 +177,9 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	physical_bone.friction = 1.0
 	physical_bone.bounce = 0.0
 
-	# Add damping to reduce jitter and make ragdoll more stable
-	physical_bone.linear_damp = 0.5
-	physical_bone.angular_damp = 0.5
+	# Add strong damping to reduce jitter and make ragdoll more stable
+	physical_bone.linear_damp = 2.0
+	physical_bone.angular_damp = 3.0
 
 	# Disable collision by default
 	physical_bone.collision_layer = 0
@@ -213,11 +213,15 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 		box.size = Vector3(0.25, 0.2, 0.2) if "hips" in name_lower else Vector3(0.2, 0.3, 0.15)
 		return box
 	else:
-		# Default capsule for limbs
-		var capsule := CapsuleShape3D.new()
-		capsule.radius = 0.03
-		capsule.height = 0.2
-		return capsule
+		# Default box for limbs (arms, legs, neck)
+		var box := BoxShape3D.new()
+		if "arm" in name_lower:
+			box.size = Vector3(0.04, 0.18, 0.04)  # Thin vertical box for arms
+		elif "leg" in name_lower:
+			box.size = Vector3(0.06, 0.22, 0.06)  # Thicker vertical box for legs
+		else:
+			box.size = Vector3(0.05, 0.15, 0.05)  # Default box
+		return box
 
 func _get_bone_mass(bone_name: StringName) -> float:
 	var name_lower := String(bone_name).to_lower()
