@@ -142,7 +142,24 @@ func _auto_generate_bones() -> void:
 		if bone_idx >= 0:
 			_create_physical_bone(bone_idx, bone_name)
 
+	# Set up collision exceptions to prevent self-collision
+	_setup_collision_exceptions()
+
 	print("Auto-generated %d PhysicalBone3D nodes" % physical_bones.size())
+
+## Prevent physical bones from colliding with each other
+func _setup_collision_exceptions() -> void:
+	# Add collision exceptions between ALL physical bones to prevent self-collision
+	for i in range(physical_bones.size()):
+		for j in range(i + 1, physical_bones.size()):
+			var bone_a := physical_bones[i]
+			var bone_b := physical_bones[j]
+
+			# Add mutual collision exception
+			bone_a.add_collision_exception_with(bone_b)
+			# Note: add_collision_exception_with is mutual, so we don't need to call it both ways
+
+	print("Set up %d collision exceptions to prevent ragdoll self-collision" % (physical_bones.size() * (physical_bones.size() - 1) / 2))
 
 func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	var physical_bone := PhysicalBone3D.new()
