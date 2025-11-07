@@ -1,7 +1,7 @@
 extends Node
-class_name RagdollControllerRefactored
+class_name RagdollController
 
-## Refactored ragdoll controller using data-driven approach
+## Ragdoll physics controller using data-driven approach
 ## Follows Godot 4.5 best practices with Resources and clean architecture
 
 signal ragdoll_enabled()
@@ -163,9 +163,6 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	# Add damping to reduce jitter and make ragdoll more stable
 	physical_bone.linear_damp = 0.5
 	physical_bone.angular_damp = 0.5
-
-	# Enable continuous collision detection for fast-moving bones
-	physical_bone.continuous_cd = true
 
 	# Limit maximum velocity to prevent explosions
 	physical_bone.max_contacts_reported = 4

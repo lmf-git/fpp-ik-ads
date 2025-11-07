@@ -20,7 +20,7 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var input_controller: InputControllerComponent = $InputController
 @onready var camera_controller: CameraControllerComponent = $CameraController
 @onready var movement_controller: MovementControllerComponent = $MovementController
-@onready var ragdoll_controller: RagdollControllerRefactored = $RagdollController
+@onready var ragdoll_controller: RagdollController = $RagdollController
 @onready var weapon_controller: WeaponControllerComponent = $WeaponController
 @onready var ik_locomotion: IKLocomotion = $IKLocomotion
 @onready var ik_debug_controller: IKDebugControllerComponent = $IKDebugController
