@@ -376,7 +376,19 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 		character_body.collision_layer = 0
 		character_body.collision_mask = 0
 
-	# Start physics simulation
+	# CRITICAL: Copy current animation poses to physical bones BEFORE starting simulation
+	# This prevents T-pose snap - ragdoll starts from current animated/IK pose
+	for bone in physical_bones:
+		var bone_idx := skeleton.find_bone(bone.bone_name)
+		if bone_idx >= 0:
+			# Get current animated bone pose (global)
+			var bone_global_pose := skeleton.get_bone_global_pose(bone_idx)
+
+			# Set physical bone to match current pose
+			# This ensures ragdoll starts from animation position, not rest pose
+			bone.global_transform = skeleton.global_transform * bone_global_pose
+
+	# Start physics simulation (bones already at correct positions)
 	skeleton.physical_bones_start_simulation()
 
 	# Enable collision on all bones
