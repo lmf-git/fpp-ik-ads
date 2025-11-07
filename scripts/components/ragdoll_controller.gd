@@ -340,12 +340,16 @@ func _configure_joint(physical_bone: PhysicalBone3D, bone_name: StringName) -> v
 			var limits: Array = ang_limits[axis]
 			var soft: float = softness.get(axis, 0.0)
 
-			physical_bone.set("joint_constraints/angular_limit_%s/enabled" % axis, true)
-			physical_bone.set("joint_constraints/angular_limit_%s/upper_limit" % axis, deg_to_rad(limits[0]))
-			physical_bone.set("joint_constraints/angular_limit_%s/lower_limit" % axis, deg_to_rad(limits[1]))
-			physical_bone.set("joint_constraints/angular_limit_%s/softness" % axis, soft)
-			physical_bone.set("joint_constraints/angular_limit_%s/restitution" % axis, 0.0)
-			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 4.0 if "arm" in String(config_key) or "leg" in String(config_key) else 2.0)
+			# Disable angular limits for shoulders and upper arms (full freedom)
+			var disable_limits := "shoulder" in name_lower or "upper_arm" in name_lower
+
+			physical_bone.set("joint_constraints/angular_limit_%s/enabled" % axis, not disable_limits)
+			if not disable_limits:
+				physical_bone.set("joint_constraints/angular_limit_%s/upper_limit" % axis, deg_to_rad(limits[0]))
+				physical_bone.set("joint_constraints/angular_limit_%s/lower_limit" % axis, deg_to_rad(limits[1]))
+				physical_bone.set("joint_constraints/angular_limit_%s/softness" % axis, soft)
+				physical_bone.set("joint_constraints/angular_limit_%s/restitution" % axis, 0.0)
+				physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 4.0 if "arm" in String(config_key) or "leg" in String(config_key) else 2.0)
 
 func _set_linear_limits(physical_bone: PhysicalBone3D, limit: float) -> void:
 	for axis in ["x", "y", "z"]:

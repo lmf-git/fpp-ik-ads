@@ -105,7 +105,7 @@ func pickup_weapon(pickup: WeaponPickup) -> void:
 func perform_weapon_switch(pickup: WeaponPickup, old_weapon: Weapon) -> void:
 	print("\n=== WEAPON SWITCH DEBUG ===")
 	print("Pickup: ", pickup)
-	print("Pickup weapon_scene: ", pickup.weapon_scene if pickup else "null")
+	print("Pickup weapon_scene: ", pickup.weapon_scene if pickup else null)
 	print("Old weapon: ", old_weapon)
 	print("right_hand_attachment: ", right_hand_attachment)
 
