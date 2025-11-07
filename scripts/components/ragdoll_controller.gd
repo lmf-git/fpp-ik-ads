@@ -19,6 +19,12 @@ var is_ragdoll_active: bool = false
 var physical_bones: Array[PhysicalBone3D] = []
 var partial_ragdoll_limbs: Array[StringName] = []
 
+# Progressive damping system - ragdoll gets stiffer over time
+var ragdoll_activation_time: float = 0.0
+const RAGDOLL_DAMPING_RAMP_DURATION: float = 5.0  # 5 seconds to reach full stiffness
+var bone_initial_damping: Dictionary = {}  # Stores initial damping per bone
+var bone_final_damping: Dictionary = {}    # Stores final damping per bone
+
 # Joint configuration data
 const JOINT_CONFIGS := {
 	&"head": {
@@ -43,7 +49,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 1.0,
 		"linear_limit": 0.003,
 		"angular_limits": {"x": [140, 0], "y": [20, -20], "z": [20, -20]},
-		"softness": {"x": 0.7, "y": 0.7, "z": 0.7}
+		"softness": {"x": 0.95, "y": 0.95, "z": 0.95}  # Very soft - floppy arms
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -51,7 +57,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.6,
 		"linear_limit": 0.008,
 		"angular_limits": {"x": [130, 0], "y": [15, -15], "z": [15, -15]},
-		"softness": {"x": 0.6, "y": 0.6, "z": 0.6}
+		"softness": {"x": 0.9, "y": 0.9, "z": 0.9}  # Very soft - floppy legs
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -59,7 +65,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 2.0,
 		"linear_limit": 0.002,
 		"angular_limits": {"x": [45, -30], "y": [40, -40], "z": [30, -30]},
-		"softness": {"x": 0.8, "y": 0.8, "z": 0.8}
+		"softness": {"x": 0.95, "y": 0.95, "z": 0.95}  # Very soft
 	},
 	&"upper_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -67,7 +73,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 1.5,
 		"linear_limit": 0.004,
 		"angular_limits": {"x": [120, -40], "y": [90, -45], "z": [50, -50]},
-		"softness": {"x": 0.8, "y": 0.8, "z": 0.8}
+		"softness": {"x": 0.95, "y": 0.95, "z": 0.95}  # Very soft
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -91,7 +97,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.8,
 		"linear_limit": 0.012,
 		"angular_limits": {"x": [90, -30], "y": [40, -40], "z": [30, -30]},
-		"softness": {"x": 0.6, "y": 0.6, "z": 0.6}
+		"softness": {"x": 0.9, "y": 0.9, "z": 0.9}  # Very soft legs
 	},
 	&"hand": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -99,7 +105,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.98,
 		"linear_limit": 0.002,
 		"angular_limits": {"x": [20, -30], "y": [15, -15], "z": [10, -10]},
-		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
+		"softness": {"x": 0.98, "y": 0.98, "z": 0.98}  # Very floppy hands
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -107,7 +113,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 0.95,
 		"linear_limit": 0.005,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
-		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
+		"softness": {"x": 0.85, "y": 0.85, "z": 0.85}  # Soft feet (but not as floppy as hands)
 	}
 }
 
@@ -117,6 +123,30 @@ func _ready() -> void:
 		return
 
 	_generate_physical_bones()
+
+func _physics_process(delta: float) -> void:
+	if not is_ragdoll_active:
+		return
+
+	# Progressive damping - ragdoll gets stiffer over time
+	ragdoll_activation_time += delta
+
+	# Calculate damping interpolation factor (0.0 to 1.0 over 5 seconds)
+	var damping_factor := minf(ragdoll_activation_time / RAGDOLL_DAMPING_RAMP_DURATION, 1.0)
+
+	# Apply smoothstep for more natural ramp (slow start, fast middle, slow end)
+	damping_factor = damping_factor * damping_factor * (3.0 - 2.0 * damping_factor)
+
+	# Update damping for all physical bones
+	for bone in physical_bones:
+		var bone_name := bone.bone_name
+		if bone_name in bone_initial_damping and bone_name in bone_final_damping:
+			var initial := bone_initial_damping[bone_name]
+			var final := bone_final_damping[bone_name]
+
+			# Lerp from initial (floppy) to final (stiff)
+			bone.linear_damp = lerpf(initial.x, final.x, damping_factor)
+			bone.angular_damp = lerpf(initial.y, final.y, damping_factor)
 
 func _generate_physical_bones() -> void:
 	if not skeleton:
@@ -177,9 +207,39 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	physical_bone.friction = 1.0
 	physical_bone.bounce = 0.0
 
-	# Add strong damping to reduce jitter (especially for limbs)
-	physical_bone.linear_damp = 2.5
-	physical_bone.angular_damp = 3.5
+	# Set initial damping (floppy) and final damping (stiff) based on bone type
+	var name_lower := String(bone_name).to_lower()
+	var initial_linear: float
+	var initial_angular: float
+	var final_linear: float
+	var final_angular: float
+
+	if "hand" in name_lower or "neck" in name_lower:
+		# Hands and neck: very floppy initially, moderate stiffness finally
+		initial_linear = 0.1
+		initial_angular = 0.2
+		final_linear = 1.5
+		final_angular = 2.0
+	elif "head" in name_lower:
+		# Head: moderate floppy, high stiffness (important for stability)
+		initial_linear = 0.3
+		initial_angular = 0.5
+		final_linear = 3.0
+		final_angular = 4.0
+	else:
+		# Arms and legs: low initial damping, high final damping
+		initial_linear = 0.2
+		initial_angular = 0.3
+		final_linear = 2.5
+		final_angular = 3.5
+
+	# Set initial damping (floppy ragdoll)
+	physical_bone.linear_damp = initial_linear
+	physical_bone.angular_damp = initial_angular
+
+	# Store damping values for progressive stiffening
+	bone_initial_damping[bone_name] = Vector2(initial_linear, initial_angular)
+	bone_final_damping[bone_name] = Vector2(final_linear, final_angular)
 
 	# Disable collision by default
 	physical_bone.collision_layer = 0
@@ -288,6 +348,17 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 		return
 
 	is_ragdoll_active = true
+
+	# Reset progressive damping timer - start floppy, ramp to stiff over 5 seconds
+	ragdoll_activation_time = 0.0
+
+	# Reset all bones to initial (low) damping
+	for bone in physical_bones:
+		var bone_name := bone.bone_name
+		if bone_name in bone_initial_damping:
+			var initial := bone_initial_damping[bone_name]
+			bone.linear_damp = initial.x
+			bone.angular_damp = initial.y
 
 	# Disable character controller collision
 	if character_body:
