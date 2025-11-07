@@ -39,35 +39,35 @@ const JOINT_CONFIGS := {
 	},
 	&"lower_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 4.0,
-		"angular_damp": 6.0,
-		"linear_limit": 0.001,
-		"angular_limits": {"x": [130, 0], "y": [8, -8], "z": [8, -8]},
-		"softness": {"x": 0.4, "y": 0.5, "z": 0.5}
+		"linear_damp": 0.5,
+		"angular_damp": 1.0,
+		"linear_limit": 0.003,
+		"angular_limits": {"x": [140, 0], "y": [20, -20], "z": [20, -20]},
+		"softness": {"x": 0.7, "y": 0.7, "z": 0.7}
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.5,
-		"angular_damp": 0.8,
-		"linear_limit": 0.005,
-		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
-		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
+		"linear_damp": 0.3,
+		"angular_damp": 0.6,
+		"linear_limit": 0.008,
+		"angular_limits": {"x": [130, 0], "y": [15, -15], "z": [15, -15]},
+		"softness": {"x": 0.6, "y": 0.6, "z": 0.6}
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 8.0,
-		"angular_damp": 12.0,
-		"linear_limit": 0.0005,
-		"angular_limits": {"x": [30, -20], "y": [20, -20], "z": [15, -15]},
-		"softness": {"x": 0.5, "y": 0.5, "z": 0.5}
+		"linear_damp": 1.0,
+		"angular_damp": 2.0,
+		"linear_limit": 0.002,
+		"angular_limits": {"x": [45, -30], "y": [40, -40], "z": [30, -30]},
+		"softness": {"x": 0.8, "y": 0.8, "z": 0.8}
 	},
 	&"upper_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 4.0,
-		"angular_damp": 6.0,
-		"linear_limit": 0.002,
-		"angular_limits": {"x": [90, -30], "y": [75, -30], "z": [30, -30]},
-		"softness": {"x": 0.6, "y": 0.6, "z": 0.7}
+		"linear_damp": 0.8,
+		"angular_damp": 1.5,
+		"linear_limit": 0.004,
+		"angular_limits": {"x": [120, -40], "y": [90, -45], "z": [50, -50]},
+		"softness": {"x": 0.8, "y": 0.8, "z": 0.8}
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -87,11 +87,11 @@ const JOINT_CONFIGS := {
 	},
 	&"upper_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.85,
-		"angular_damp": 0.95,
-		"linear_limit": 0.01,
-		"angular_limits": {"x": [70, -20], "y": [25, -25], "z": [15, -15]},
-		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
+		"linear_damp": 0.5,
+		"angular_damp": 0.8,
+		"linear_limit": 0.012,
+		"angular_limits": {"x": [90, -30], "y": [40, -40], "z": [30, -30]},
+		"softness": {"x": 0.6, "y": 0.6, "z": 0.6}
 	},
 	&"hand": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -177,9 +177,9 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 	physical_bone.friction = 1.0
 	physical_bone.bounce = 0.0
 
-	# Add strong damping to reduce jitter and make ragdoll more stable
-	physical_bone.linear_damp = 2.0
-	physical_bone.angular_damp = 3.0
+	# Add moderate damping for stability without excessive stiffness
+	physical_bone.linear_damp = 1.0
+	physical_bone.angular_damp = 1.5
 
 	# Disable collision by default
 	physical_bone.collision_layer = 0
