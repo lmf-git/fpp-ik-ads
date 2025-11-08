@@ -132,10 +132,3 @@ func _get_stance_name(stance_val: int) -> String:
 		1: return "Crouching"
 		2: return "Prone"
 		_: return "Unknown"
-
-func _get_swap_phase_name(phase: int) -> String:
-	match phase:
-		1: return "Lowering"
-		2: return "Switching"
-		3: return "Raising"
-		_: return "None"
