@@ -50,8 +50,8 @@ const JOINT_CONFIGS := {
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.5,
-		"angular_damp": 1.0,
+		"linear_damp": 0.1,
+		"angular_damp": 0.2,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -82,16 +82,16 @@ const JOINT_CONFIGS := {
 	},
 	&"hips": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 2.0,
-		"angular_damp": 3.0,
+		"linear_damp": 0.5,
+		"angular_damp": 1.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [20, -20], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"upper_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.5,
-		"angular_damp": 1.0,
+		"linear_damp": 0.1,
+		"angular_damp": 0.2,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [70, -20], "y": [25, -25], "z": [15, -15]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -106,8 +106,8 @@ const JOINT_CONFIGS := {
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.8,
-		"angular_damp": 1.2,
+		"linear_damp": 0.2,
+		"angular_damp": 0.3,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -361,13 +361,17 @@ func _freeze_ragdoll_bones() -> void:
 	if ragdoll_sleep_timer < RAGDOLL_SLEEP_DELAY:
 		return
 
-	# Put all physical bones to sleep to stop physics simulation
+	# Freeze all physical bones by zeroing velocities and increasing damping
 	for bone in physical_bones:
-		bone.sleeping = true
+		bone.linear_velocity = Vector3.ZERO
+		bone.angular_velocity = Vector3.ZERO
+		# Set very high damping to keep them frozen
+		bone.linear_damp = 100.0
+		bone.angular_damp = 100.0
 
 	# Only do this once
 	ragdoll_sleep_timer = -1.0
-	print("Ragdoll frozen - bodies put to sleep")
+	print("Ragdoll frozen - bodies velocities zeroed and damping increased")
 
 ## Toggle ragdoll
 func toggle_ragdoll() -> void:
