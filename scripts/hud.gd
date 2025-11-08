@@ -13,18 +13,25 @@ class_name HUD
 @onready var health_bar: ProgressBar = $HealthBar
 @onready var control_hints: VBoxContainer = $ControlHints
 
-var player: SkeletonFPPController
+var player: CharacterControllerMain
 
 func _ready():
 	# Find player
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("player")
 
-	if player:
-		# Connect signals
+	if not player:
+		push_warning("HUD: No player found in 'player' group")
+		return
+
+	# Connect signals
+	if player.has_signal("weapon_changed"):
 		player.weapon_changed.connect(_on_weapon_changed)
+	if player.has_signal("stance_changed"):
 		player.stance_changed.connect(_on_stance_changed)
+	if player.has_signal("interaction_available"):
 		player.interaction_available.connect(_on_interaction_available)
+	if player.has_signal("interaction_unavailable"):
 		player.interaction_unavailable.connect(_on_interaction_unavailable)
 
 	# Hide interaction prompt initially
@@ -71,33 +78,44 @@ func _update_weapon_info():
 		weapon_label.text = "No Weapon"
 
 func _update_stance_info():
-	match player.stance:
-		SkeletonFPPController.Stance.STANDING:
+	var movement_state = player.get_movement_state()
+	var stance = movement_state.get("stance", 0)
+	match stance:
+		0:  # Standing
 			stance_label.text = "Standing"
-		SkeletonFPPController.Stance.CROUCHING:
+		1:  # Crouching
 			stance_label.text = "Crouching"
-		SkeletonFPPController.Stance.PRONE:
+		2:  # Prone
 			stance_label.text = "Prone"
 
 func _update_freelook_indicator():
-	if player.is_freelooking:
+	var camera_state = player.get_camera_state()
+	var is_freelooking = camera_state.get("is_freelooking", false)
+
+	if is_freelooking:
 		freelook_indicator.visible = true
-		var offset_deg = rad_to_deg(player.freelook_offset)
+		var freelook_offset = camera_state.get("freelook_offset", 0.0)
+		var offset_deg = rad_to_deg(freelook_offset)
 		freelook_indicator.text = "FREELOOK [%d°]" % abs(offset_deg)
 
-		# Color based on offset
-		var max_angle = player.freelook_max_angle
-		var ratio = abs(player.freelook_offset) / deg_to_rad(max_angle)
+		# Color based on offset (max freelook angle is typically 90°)
+		var max_angle = 90.0
+		var ratio = abs(offset_deg) / max_angle
 		freelook_indicator.add_theme_color_override("font_color",
 			Color.GREEN.lerp(Color.RED, ratio))
 	else:
 		freelook_indicator.visible = false
 
 func _update_ads_indicator():
-	ads_indicator.visible = player.is_aiming
+	var movement_state = player.get_movement_state()
+	var is_aiming = movement_state.get("is_aiming", false)
+	ads_indicator.visible = is_aiming
 
 	# Scale crosshair with ADS
-	var scale_factor = lerp(1.0, 0.5, player.ads_blend)
+	var ads_blend = 0.0
+	if player.camera_controller:
+		ads_blend = player.camera_controller.ads_blend
+	var scale_factor = lerp(1.0, 0.5, ads_blend)
 	crosshair.scale = Vector2.ONE * scale_factor
 
 func _update_crosshair():
@@ -105,9 +123,13 @@ func _update_crosshair():
 	crosshair.visible = player.current_weapon != null
 
 	# Change crosshair color based on state
-	if player.is_aiming:
+	var movement_state = player.get_movement_state()
+	var is_aiming = movement_state.get("is_aiming", false)
+	var is_sprinting = movement_state.get("is_sprinting", false)
+
+	if is_aiming:
 		crosshair.modulate = Color.GREEN
-	elif player.is_sprinting:
+	elif is_sprinting:
 		crosshair.modulate = Color.ORANGE
 	else:
 		crosshair.modulate = Color.WHITE
