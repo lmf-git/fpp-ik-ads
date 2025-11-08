@@ -27,6 +27,10 @@ var is_aiming: bool = false
 var velocity: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
+	# Defer validation to allow parent to initialize config first
+	call_deferred("_validate_and_initialize")
+
+func _validate_and_initialize() -> void:
 	if not config:
 		push_error("MovementController: CharacterConfig not assigned!")
 

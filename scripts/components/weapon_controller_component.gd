@@ -33,7 +33,8 @@ var left_hand_ik_target: Node3D
 var ads_blend: float = 0.0
 
 func _ready() -> void:
-	_validate_setup()
+	# Defer validation to allow parent to initialize config first
+	call_deferred("_validate_setup")
 
 func _validate_setup() -> void:
 	var errors: Array[String] = []

@@ -111,6 +111,10 @@ const JOINT_CONFIGS := {
 }
 
 func _ready() -> void:
+	# Defer validation to allow parent to initialize config first
+	call_deferred("_validate_and_initialize")
+
+func _validate_and_initialize() -> void:
 	if not bone_config:
 		push_error("RagdollController: BoneConfig not assigned!")
 		return

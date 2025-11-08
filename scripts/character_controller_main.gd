@@ -253,7 +253,7 @@ func _on_ragdoll_disabled() -> void:
 	if movement_controller:
 		movement_controller.process_mode = Node.PROCESS_MODE_INHERIT
 
-func _on_weapon_changed(new_weapon: Weapon, old_weapon: Weapon) -> void:
+func _on_weapon_changed(new_weapon: Weapon, _old_weapon: Weapon) -> void:
 	# Update current weapon reference
 	current_weapon = new_weapon
 	weapon_changed.emit(new_weapon)

@@ -44,11 +44,11 @@ var third_person_aim_offset: float = 0.0  # How far camera is ahead of body
 var _head_bone_idx: int = -1
 var _spine_bone_idx: int = -1
 
-# Warning flags (prevent console spam)
-var _warned_skeleton: bool = false
-var _warned_head_bone: bool = false
-
 func _ready() -> void:
+	# Defer validation to allow parent to initialize config first
+	call_deferred("_validate_and_initialize")
+
+func _validate_and_initialize() -> void:
 	var errors: Array[String] = []
 
 	if not config:
