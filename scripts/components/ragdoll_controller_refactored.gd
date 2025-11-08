@@ -46,8 +46,8 @@ const JOINT_CONFIGS := {
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.5,
-		"angular_damp": 0.8,
+		"linear_damp": 3.0,
+		"angular_damp": 5.0,
 		"linear_limit": 0.005,
 		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
 		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
@@ -70,40 +70,40 @@ const JOINT_CONFIGS := {
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.95,
-		"angular_damp": 0.98,
+		"linear_damp": 10.0,
+		"angular_damp": 12.0,
 		"linear_limit": 0.001,
 		"angular_limits": {"x": [5, -5], "y": [8, -8], "z": [3, -3]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"hips": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.9,
-		"angular_damp": 0.95,
+		"linear_damp": 12.0,
+		"angular_damp": 15.0,
 		"linear_limit": 0.01,
 		"angular_limits": {"x": [20, -20], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"upper_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.85,
-		"angular_damp": 0.95,
+		"linear_damp": 4.0,
+		"angular_damp": 6.0,
 		"linear_limit": 0.01,
 		"angular_limits": {"x": [70, -20], "y": [25, -25], "z": [15, -15]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"hand": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.9,
-		"angular_damp": 0.98,
+		"linear_damp": 4.0,
+		"angular_damp": 5.0,
 		"linear_limit": 0.002,
 		"angular_limits": {"x": [20, -30], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 0.9,
-		"angular_damp": 0.95,
+		"linear_damp": 5.0,
+		"angular_damp": 6.0,
 		"linear_limit": 0.005,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -160,10 +160,12 @@ func _create_physical_bone(_bone_idx: int, bone_name: StringName) -> void:
 
 	# Set physics properties
 	physical_bone.mass = _get_bone_mass(bone_name)
-	physical_bone.friction = 1.0
+	physical_bone.friction = 0.8
 	physical_bone.bounce = 0.0
+	physical_bone.gravity_scale = 1.0
+	physical_bone.can_sleep = true
 
-	# Disable collision by default
+	# Disable collision by default (enabled when ragdoll activates)
 	physical_bone.collision_layer = 0
 	physical_bone.collision_mask = 0
 
@@ -252,7 +254,7 @@ func _configure_joint(physical_bone: PhysicalBone3D, bone_name: StringName) -> v
 			physical_bone.set("joint_constraints/angular_limit_%s/lower_limit" % axis, deg_to_rad(limits[1]))
 			physical_bone.set("joint_constraints/angular_limit_%s/softness" % axis, soft)
 			physical_bone.set("joint_constraints/angular_limit_%s/restitution" % axis, 0.0)
-			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 4.0 if "arm" in String(config_key) or "leg" in String(config_key) else 2.0)
+			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 8.0 if "arm" in String(config_key) or "leg" in String(config_key) else 6.0)
 
 func _set_linear_limits(physical_bone: PhysicalBone3D, limit: float) -> void:
 	for axis in ["x", "y", "z"]:
