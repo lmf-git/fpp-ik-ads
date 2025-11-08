@@ -168,9 +168,15 @@ func _update_head_rotation() -> void:
 	if not skeleton or _head_bone_idx < 0:
 		return
 
-	# Calculate head rotation
-	# In normal FPS mode, only pitch (no yaw since body handles that)
-	# In freelook/third-person, both pitch and yaw
+	# In normal FPS mode, reset bones to rest pose
+	# The camera pitch is handled by the camera itself, not bone rotation
+	if not is_freelooking and not is_third_person:
+		skeleton.set_bone_pose_rotation(_head_bone_idx, Quaternion.IDENTITY)
+		if _spine_bone_idx >= 0:
+			skeleton.set_bone_pose_rotation(_spine_bone_idx, Quaternion.IDENTITY)
+		return
+
+	# In freelook/third-person modes, apply head rotation
 	var head_pitch := camera_x_rotation  # Camera pitch directly controls head pitch
 	var head_yaw := freelook_offset
 
@@ -211,6 +217,16 @@ func _update_camera_mode() -> void:
 		if third_person_camera.current:
 			third_person_camera.current = false
 			fps_camera.current = true
+
+		# In FPS mode, handle camera rotation
+		if is_freelooking:
+			# When freelooking, head bone handles rotation - reset camera local rotation
+			fps_camera.rotation = Vector3.ZERO
+		else:
+			# In normal FPS mode, camera rotates for pitch (head bone is at rest)
+			fps_camera.rotation.x = camera_x_rotation
+			fps_camera.rotation.y = 0  # Yaw is handled by body rotation
+			fps_camera.rotation.z = 0
 
 ## Update ADS (Aim Down Sights) FOV
 func update_ads(delta: float, is_aiming: bool) -> void:
