@@ -5,6 +5,7 @@ class_name WeaponSwapStateMachine
 ## Manages weapon swap animation phases cleanly
 
 signal swap_started()
+@warning_ignore("UNUSED_SIGNAL")  # Emitted in RaisingSwapState inner class
 signal swap_completed()
 
 @export var swap_speed: float = 3.0

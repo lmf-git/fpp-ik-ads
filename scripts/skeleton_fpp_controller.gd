@@ -675,8 +675,8 @@ func _update_camera_mode():
 			third_person_camera.current = true
 		# Update third-person camera position to rotate with character
 		# Use character's body rotation (not camera rotation)
-		var camera_offset = Vector3(0, 3, 5)  # Behind and above
-		var rotated_offset = Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation).basis * camera_offset
+		var third_person_offset = Vector3(0, 3, 5)  # Behind and above
+		var rotated_offset = Transform3D.IDENTITY.rotated(Vector3.UP, body_y_rotation).basis * third_person_offset
 		third_person_camera.global_position = global_position + rotated_offset
 		third_person_camera.look_at(global_position + Vector3(0, 1, 0), Vector3.UP)
 	else:
