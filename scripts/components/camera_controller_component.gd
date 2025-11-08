@@ -168,8 +168,10 @@ func _update_head_rotation() -> void:
 	if not skeleton or _head_bone_idx < 0:
 		return
 
-	# Calculate head rotation (compensate for camera-body offset)
-	var head_pitch := -camera_x_rotation  # Negate for character model orientation
+	# Calculate head rotation
+	# In normal FPS mode, only pitch (no yaw since body handles that)
+	# In freelook/third-person, both pitch and yaw
+	var head_pitch := camera_x_rotation  # Camera pitch directly controls head pitch
 	var head_yaw := freelook_offset
 
 	# Apply neck limits
