@@ -18,6 +18,10 @@ var is_ragdoll_active: bool = false
 var physical_bones: Array[PhysicalBone3D] = []
 var partial_ragdoll_limbs: Array[StringName] = []
 
+# Sleep timer
+var ragdoll_sleep_timer: float = 0.0
+const RAGDOLL_SLEEP_DELAY: float = 5.0  # Freeze bodies after 5 seconds
+
 # Joint configuration data
 const JOINT_CONFIGS := {
 	&"head": {
@@ -113,6 +117,12 @@ const JOINT_CONFIGS := {
 func _ready() -> void:
 	# Defer validation to allow parent to initialize config first
 	call_deferred("_validate_and_initialize")
+
+func _process(delta: float) -> void:
+	if is_ragdoll_active:
+		ragdoll_sleep_timer += delta
+		if ragdoll_sleep_timer >= RAGDOLL_SLEEP_DELAY:
+			_freeze_ragdoll_bones()
 
 func _validate_and_initialize() -> void:
 	if not bone_config:
@@ -279,6 +289,7 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 		return
 
 	is_ragdoll_active = true
+	ragdoll_sleep_timer = 0.0  # Reset sleep timer
 
 	# Capture character's current velocity before disabling controller
 	var character_velocity := Vector3.ZERO
@@ -338,6 +349,19 @@ func disable_ragdoll() -> void:
 
 	ragdoll_disabled.emit()
 	print("Ragdoll disabled - returned to animated mode")
+
+## Freeze ragdoll bones after sleep delay
+func _freeze_ragdoll_bones() -> void:
+	if ragdoll_sleep_timer < RAGDOLL_SLEEP_DELAY:
+		return
+
+	# Put all physical bones to sleep to stop physics simulation
+	for bone in physical_bones:
+		bone.sleeping = true
+
+	# Only do this once
+	ragdoll_sleep_timer = -1.0
+	print("Ragdoll frozen - bodies put to sleep")
 
 ## Toggle ragdoll
 func toggle_ragdoll() -> void:

@@ -29,7 +29,7 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var fps_camera: Camera3D = %FPSCamera
 @onready var third_person_camera: Camera3D = get_node_or_null("ThirdPersonCamera")
 @onready var interaction_ray: RayCast3D = %InteractionRay
-@onready var animation_player: AnimationPlayer = %AnimationPlayer
+@onready var animation_player: AnimationPlayer = get_node_or_null("CharacterModel/AnimationPlayer")
 @onready var right_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandIK")
 @onready var left_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/LeftHandIK")
 @onready var right_hand_attachment: Node3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandAttachment")
@@ -248,12 +248,25 @@ func _on_ragdoll_enabled() -> void:
 	if movement_controller:
 		movement_controller.process_mode = Node.PROCESS_MODE_DISABLED
 
-	if ik_locomotion and ik_locomotion.ik_mode_enabled:
-		ik_locomotion.disable_ik_mode()
+	# CRITICAL: Disable IK to prevent skeleton from fighting physics
+	if ik_locomotion:
+		if ik_locomotion.ik_mode_enabled:
+			ik_locomotion.disable_ik_mode()
+		# Force stop all IK chains
+		if ik_locomotion.left_foot_ik:
+			ik_locomotion.left_foot_ik.stop()
+		if ik_locomotion.right_foot_ik:
+			ik_locomotion.right_foot_ik.stop()
 
-	# CRITICAL: Stop animation to prevent skeleton from fighting physics
-	if animation_player and animation_player.is_playing():
-		animation_player.pause()
+	# CRITICAL: Stop animation completely to prevent skeleton from fighting physics
+	if animation_player:
+		animation_player.stop()  # Stop completely, not pause
+
+	# Disable weapon IK during ragdoll
+	if right_hand_ik:
+		right_hand_ik.stop()
+	if left_hand_ik:
+		left_hand_ik.stop()
 
 func _on_ragdoll_disabled() -> void:
 	# Re-enable systems after ragdoll
@@ -261,9 +274,12 @@ func _on_ragdoll_disabled() -> void:
 		movement_controller.process_mode = Node.PROCESS_MODE_INHERIT
 
 	# Restart animation
-	if animation_player and not animation_player.is_playing():
+	if animation_player:
 		if animation_player.has_animation("www_characters3d_com | Idle"):
 			animation_player.play("www_characters3d_com | Idle")
+
+	# Re-enable IK if it was enabled before (but don't auto-enable)
+	# IK will be re-enabled if user presses 7 key again
 
 func _on_weapon_changed(new_weapon: Weapon, _old_weapon: Weapon) -> void:
 	# Update current weapon reference
