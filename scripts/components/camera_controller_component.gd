@@ -168,14 +168,17 @@ func _update_head_rotation() -> void:
 	if not skeleton or _head_bone_idx < 0:
 		return
 
-	# Always apply head rotation for visual feedback
+	# In normal FPS mode, keep head bone at rest (camera handles rotation)
+	if not is_freelooking and not is_third_person:
+		skeleton.set_bone_pose_rotation(_head_bone_idx, Quaternion.IDENTITY)
+		if _spine_bone_idx >= 0:
+			skeleton.set_bone_pose_rotation(_spine_bone_idx, Quaternion.IDENTITY)
+		return
+
+	# In freelook/third-person, apply head rotation for visual feedback
 	# Note: Character model is rotated 180° so bone axes are flipped
 	var head_pitch := -camera_x_rotation  # Inverted for 180° rotated model
 	var head_yaw := -freelook_offset  # Inverted for 180° rotated model
-
-	# In normal FPS mode, no yaw offset (body follows camera)
-	if not is_freelooking and not is_third_person:
-		head_yaw = 0.0
 
 	# Apply neck limits
 	head_pitch = clampf(
@@ -215,9 +218,9 @@ func _update_camera_mode() -> void:
 			third_person_camera.current = false
 			fps_camera.current = true
 
-		# In FPS mode, head bone handles all rotation - camera stays at local zero
-		# This allows the camera to follow the head bone naturally
-		fps_camera.rotation = Vector3.ZERO
+		# In FPS mode, camera handles pitch, 180° Y to compensate for model rotation
+		# Character model is rotated 180° so camera needs to face forward
+		fps_camera.rotation = Vector3(camera_x_rotation, PI, 0)
 
 ## Update ADS (Aim Down Sights) FOV
 func update_ads(delta: float, is_aiming: bool) -> void:

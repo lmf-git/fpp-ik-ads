@@ -46,8 +46,8 @@ const JOINT_CONFIGS := {
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 3.0,
-		"angular_damp": 4.0,
+		"linear_damp": 1.5,
+		"angular_damp": 2.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -86,8 +86,8 @@ const JOINT_CONFIGS := {
 	},
 	&"upper_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 3.5,
-		"angular_damp": 4.5,
+		"linear_damp": 1.5,
+		"angular_damp": 2.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [70, -20], "y": [25, -25], "z": [15, -15]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -102,8 +102,8 @@ const JOINT_CONFIGS := {
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 3.5,
-		"angular_damp": 4.5,
+		"linear_damp": 2.0,
+		"angular_damp": 2.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
