@@ -8,7 +8,7 @@ class_name DebugOverlay
 @onready var performance_text: RichTextLabel = $PerformancePanel/MarginContainer/PerformanceText
 @onready var ik_visualization: Node3D = null
 
-var player: SkeletonFPPController
+var player: CharacterControllerMain
 var debug_visible: bool = false
 var show_ik_debug: bool = false
 
@@ -16,6 +16,9 @@ func _ready():
 	# Find player
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("player")
+
+	if not player:
+		push_warning("DebugOverlay: No player found in 'player' group")
 
 	# Hide by default
 	debug_panel.visible = false
@@ -46,34 +49,38 @@ func _process(_delta):
 func _update_debug_text():
 	var text = "[b][color=cyan]FPP IK ADS DEBUG INFO[/color][/b]\n\n"
 
+	# Get component states
+	var movement_state = player.get_movement_state()
+	var camera_state = player.get_camera_state()
+
 	# Player state
 	text += "[b][color=yellow]PLAYER STATE[/color][/b]\n"
 	text += "Position: %v\n" % player.global_position
 	text += "Velocity: %v (%.2f m/s)\n" % [player.velocity, player.velocity.length()]
 	text += "On Floor: %s\n" % player.is_on_floor()
-	text += "Stance: %s\n" % _stance_to_string(player.stance)
-	text += "Sprinting: %s\n" % player.is_sprinting
+	text += "Stance: %s\n" % _stance_to_string(movement_state.get("stance", 0))
+	text += "Sprinting: %s\n" % movement_state.get("is_sprinting", false)
 	text += "\n"
 
 	# Camera & Look
 	text += "[b][color=yellow]CAMERA & LOOK[/color][/b]\n"
-	text += "Camera Pitch: %.1f°\n" % rad_to_deg(player.camera_x_rotation)
-	text += "Camera Yaw: %.1f°\n" % rad_to_deg(player.camera_y_rotation)
-	text += "Body Yaw: %.1f°\n" % rad_to_deg(player.body_y_rotation)
-	text += "Freelooking: %s\n" % player.is_freelooking
-	if player.is_freelooking:
-		text += "Freelook Offset: %.1f° / %.1f°\n" % [
-			rad_to_deg(abs(player.freelook_offset)),
-			player.freelook_max_angle
-		]
+	var cam_rot = camera_state.get("rotation", Vector2.ZERO)
+	text += "Camera Pitch: %.1f°\n" % rad_to_deg(cam_rot.x)
+	text += "Camera Yaw: %.1f°\n" % rad_to_deg(cam_rot.y)
+	text += "Body Yaw: %.1f°\n" % rad_to_deg(camera_state.get("body_rotation", 0.0))
+	text += "Freelooking: %s\n" % camera_state.get("is_freelooking", false)
+	text += "Third Person: %s\n" % camera_state.get("is_third_person", false)
+	if camera_state.get("is_freelooking", false):
+		text += "Freelook Offset: %.1f°\n" % rad_to_deg(abs(camera_state.get("freelook_offset", 0.0)))
 	text += "\n"
 
 	# ADS
 	text += "[b][color=yellow]ADS SYSTEM[/color][/b]\n"
-	text += "Aiming: %s\n" % player.is_aiming
-	text += "ADS Blend: %.2f\n" % player.ads_blend
-	if player.camera:
-		text += "Current FOV: %.1f°\n" % player.camera.fov
+	text += "Aiming: %s\n" % movement_state.get("is_aiming", false)
+	if player.camera_controller:
+		text += "ADS Blend: %.2f\n" % player.camera_controller.ads_blend
+	if player.fps_camera:
+		text += "Current FOV: %.1f°\n" % player.fps_camera.fov
 	text += "\n"
 
 	# Weapon
@@ -94,21 +101,30 @@ func _update_debug_text():
 
 	# IK System
 	text += "[b][color=yellow]IK SYSTEM[/color][/b]\n"
-	text += "IK Enabled: %s\n" % player.enable_ik
+	text += "IK Enabled: %s\n" % player.ik_mode_enabled
 	if player.skeleton:
 		text += "Skeleton Bones: %d\n" % player.skeleton.get_bone_count()
-		text += "Head Bone: %s (#%d)\n" % [player.head_bone_name, player.head_bone_idx]
-		text += "Spine Bone: %s (#%d)\n" % [player.spine_bone_name, player.spine_bone_idx]
+	if player.ik_locomotion:
+		text += "IK Locomotion: Present\n"
 	if player.right_hand_ik:
 		text += "Right Hand IK: Active\n"
 	if player.left_hand_ik:
 		text += "Left Hand IK: Active\n"
 	text += "\n"
 
+	# Ragdoll
+	text += "[b][color=yellow]RAGDOLL[/color][/b]\n"
+	if player.ragdoll_controller:
+		text += "Active: %s\n" % player.ragdoll_controller.is_ragdoll_active
+		text += "Bones: %d\n" % player.ragdoll_controller.physical_bones.size()
+	text += "\n"
+
 	# Controls reminder
 	text += "[b][color=green]DEBUG CONTROLS[/color][/b]\n"
 	text += "F3 - Toggle this overlay\n"
 	text += "F4 - Toggle IK visualization\n"
+	text += "7 - Toggle IK Mode\n"
+	text += "R - Toggle Ragdoll\n"
 
 	debug_text.text = text
 
@@ -151,13 +167,13 @@ func _draw_ik_debug():
 	# For now, just a placeholder
 	pass
 
-func _stance_to_string(stance) -> String:
+func _stance_to_string(stance: int) -> String:
 	match stance:
-		SkeletonFPPController.Stance.STANDING:
+		0:  # Standing
 			return "Standing"
-		SkeletonFPPController.Stance.CROUCHING:
+		1:  # Crouching
 			return "Crouching"
-		SkeletonFPPController.Stance.PRONE:
+		2:  # Prone
 			return "Prone"
 	return "Unknown"
 

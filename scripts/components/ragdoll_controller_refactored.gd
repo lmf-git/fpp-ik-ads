@@ -26,7 +26,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 5.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -5], "y": [40, -40], "z": [10, -10]},
-		"softness": {"x": 0.8, "y": 0.8, "z": 0.9}
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"neck": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -34,7 +34,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 6.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [10, -5], "y": [15, -15], "z": [3, -3]},
-		"softness": {"x": 0.9, "y": 0.9, "z": 0.95}
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"lower_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -42,7 +42,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 3.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [140, 0], "y": [10, -10], "z": [5, -5]},
-		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -50,7 +50,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 4.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
-		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
@@ -66,7 +66,7 @@ const JOINT_CONFIGS := {
 		"angular_damp": 3.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, -20], "y": [90, -30], "z": [45, -45]},
-		"softness": {"x": 0.7, "y": 0.7, "z": 0.8}
+		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,

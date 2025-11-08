@@ -248,10 +248,19 @@ func _on_ragdoll_enabled() -> void:
 	if ik_locomotion and ik_locomotion.ik_mode_enabled:
 		ik_locomotion.disable_ik_mode()
 
+	# CRITICAL: Stop animation to prevent skeleton from fighting physics
+	if animation_player and animation_player.is_playing():
+		animation_player.pause()
+
 func _on_ragdoll_disabled() -> void:
 	# Re-enable systems after ragdoll
 	if movement_controller:
 		movement_controller.process_mode = Node.PROCESS_MODE_INHERIT
+
+	# Restart animation
+	if animation_player and not animation_player.is_playing():
+		if animation_player.has_animation("www_characters3d_com | Idle"):
+			animation_player.play("www_characters3d_com | Idle")
 
 func _on_weapon_changed(new_weapon: Weapon, _old_weapon: Weapon) -> void:
 	# Update current weapon reference
