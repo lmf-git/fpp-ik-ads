@@ -219,16 +219,14 @@ func _update_camera_mode() -> void:
 			fps_camera.current = true
 
 		# In FPS mode, handle camera rotation
-		# NOTE: CharacterModel is rotated 180° so camera needs Y rotation compensation
 		if is_freelooking:
-			# When freelooking, head bone handles rotation
-			# Compensate for 180° model rotation
-			fps_camera.rotation = Vector3(0, PI, 0)
+			# When freelooking, head bone handles rotation - reset camera local rotation
+			fps_camera.rotation = Vector3.ZERO
 		else:
 			# In normal FPS mode, camera rotates for pitch (head bone is at rest)
-			# Compensate for 180° model rotation with Y=PI
+			# Yaw is handled by body rotation
 			fps_camera.rotation.x = camera_x_rotation
-			fps_camera.rotation.y = PI  # Compensate for model's 180° rotation
+			fps_camera.rotation.y = 0
 			fps_camera.rotation.z = 0
 
 ## Update ADS (Aim Down Sights) FOV
