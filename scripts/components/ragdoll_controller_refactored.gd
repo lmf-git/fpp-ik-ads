@@ -22,88 +22,88 @@ var partial_ragdoll_limbs: Array[StringName] = []
 const JOINT_CONFIGS := {
 	&"head": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 15.0,
-		"angular_damp": 20.0,
+		"linear_damp": 3.5,
+		"angular_damp": 5.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -5], "y": [40, -40], "z": [10, -10]},
 		"softness": {"x": 0.8, "y": 0.8, "z": 0.9}
 	},
 	&"neck": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 20.0,
-		"angular_damp": 25.0,
+		"linear_damp": 4.0,
+		"angular_damp": 6.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [10, -5], "y": [15, -15], "z": [3, -3]},
 		"softness": {"x": 0.9, "y": 0.9, "z": 0.95}
 	},
 	&"lower_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 8.0,
-		"angular_damp": 10.0,
+		"linear_damp": 2.5,
+		"angular_damp": 3.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [140, 0], "y": [10, -10], "z": [5, -5]},
 		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 10.0,
-		"angular_damp": 12.0,
+		"linear_damp": 3.0,
+		"angular_damp": 4.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
 		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 15.0,
-		"angular_damp": 20.0,
+		"linear_damp": 4.0,
+		"angular_damp": 5.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [1, -1], "y": [1, -1], "z": [1, -1]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"upper_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 8.0,
-		"angular_damp": 10.0,
+		"linear_damp": 2.5,
+		"angular_damp": 3.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, -20], "y": [90, -30], "z": [45, -45]},
 		"softness": {"x": 0.7, "y": 0.7, "z": 0.8}
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 25.0,
-		"angular_damp": 30.0,
+		"linear_damp": 5.0,
+		"angular_damp": 7.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [5, -5], "y": [8, -8], "z": [3, -3]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"hips": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 30.0,
-		"angular_damp": 35.0,
+		"linear_damp": 6.0,
+		"angular_damp": 8.0,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [20, -20], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"upper_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 12.0,
-		"angular_damp": 15.0,
+		"linear_damp": 3.5,
+		"angular_damp": 4.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [70, -20], "y": [25, -25], "z": [15, -15]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"hand": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 10.0,
-		"angular_damp": 12.0,
+		"linear_damp": 2.5,
+		"angular_damp": 3.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [20, -30], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 12.0,
-		"angular_damp": 15.0,
+		"linear_damp": 3.5,
+		"angular_damp": 4.5,
 		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
@@ -184,23 +184,28 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 		var sphere := SphereShape3D.new()
 		sphere.radius = 0.08
 		return sphere
+	elif "shoulder" in name_lower:
+		# Very small sphere for shoulders - they don't move much
+		var sphere := SphereShape3D.new()
+		sphere.radius = 0.02
+		return sphere
 	elif "hand" in name_lower:
 		var box := BoxShape3D.new()
-		box.size = Vector3(0.06, 0.08, 0.03)
+		box.size = Vector3(0.04, 0.06, 0.02)  # Smaller hands
 		return box
 	elif "foot" in name_lower:
 		var box := BoxShape3D.new()
-		box.size = Vector3(0.08, 0.05, 0.15)
+		box.size = Vector3(0.08, 0.04, 0.12)  # Slightly smaller feet
 		return box
 	elif "spine" in name_lower or "hips" in name_lower:
 		var box := BoxShape3D.new()
-		box.size = Vector3(0.25, 0.2, 0.2) if "hips" in name_lower else Vector3(0.2, 0.3, 0.15)
+		box.size = Vector3(0.22, 0.18, 0.18) if "hips" in name_lower else Vector3(0.18, 0.25, 0.13)
 		return box
 	else:
-		# Default capsule for limbs
+		# Default capsule for limbs - smaller radius to allow arms to cross body
 		var capsule := CapsuleShape3D.new()
-		capsule.radius = 0.03
-		capsule.height = 0.2
+		capsule.radius = 0.025  # Reduced from 0.03
+		capsule.height = 0.18   # Slightly shorter
 		return capsule
 
 func _get_bone_mass(bone_name: StringName) -> float:
@@ -275,6 +280,11 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 
 	is_ragdoll_active = true
 
+	# Capture character's current velocity before disabling controller
+	var character_velocity := Vector3.ZERO
+	if character_body:
+		character_velocity = character_body.velocity
+
 	# Disable character controller collision
 	if character_body:
 		character_body.collision_layer = 0
@@ -293,7 +303,12 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 			if bone != other_bone:
 				bone.add_collision_exception_with(other_bone)
 
-	# Apply impulse if specified
+	# Transfer character velocity to ragdoll bones for momentum continuity
+	if character_velocity.length() > 0.1:
+		for bone in physical_bones:
+			bone.linear_velocity = character_velocity
+
+	# Apply additional impulse if specified (for impacts, explosions, etc.)
 	if impulse.length() > 0:
 		for bone in physical_bones:
 			bone.apply_central_impulse(impulse)
