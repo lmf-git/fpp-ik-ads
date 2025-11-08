@@ -153,9 +153,9 @@ func _update_body_rotation(delta: float) -> void:
 			body_y_rotation = camera_y_rotation - sign(freelook_offset) * max_neck_yaw_rad
 			freelook_offset = sign(freelook_offset) * max_neck_yaw_rad
 	else:
-		# Normal mode: body follows camera smoothly
-		body_y_rotation = lerp_angle(body_y_rotation, camera_y_rotation, config.body_rotation_speed * delta)
-		freelook_offset = wrapf(camera_y_rotation - body_y_rotation, -PI, PI)
+		# Normal FPS mode: body instantly follows camera
+		body_y_rotation = camera_y_rotation
+		freelook_offset = 0.0  # No offset in normal mode
 
 	# Always wrap body rotation
 	body_y_rotation = wrapf(body_y_rotation, -PI, PI)
