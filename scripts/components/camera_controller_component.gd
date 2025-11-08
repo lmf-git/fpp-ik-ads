@@ -9,12 +9,12 @@ signal camera_mode_changed(is_third_person: bool)
 
 # Constants for spine/head coordination
 const SPINE_PITCH_FOLLOW_RATIO: float = 0.3  # How much spine follows head pitch (30%)
-const SPINE_YAW_FOLLOW_RATIO: float = 0.5    # How much spine follows head yaw (50%)
+const SPINE_YAW_FOLLOW_RATIO: float = 0.25   # How much spine follows head yaw (25%) - head leads more
 const THIRD_PERSON_CAMERA_HEIGHT: float = 3.0  # Height above character
 const THIRD_PERSON_CAMERA_DISTANCE: float = 5.0  # Distance behind character
 
 # Third-person camera lag/sway constants
-const THIRD_PERSON_TURN_DEADZONE: float = 0.15  # Radians (~8.5°) - head turns before body
+const THIRD_PERSON_TURN_DEADZONE: float = 0.35  # Radians (~20°) - head turns before body
 const THIRD_PERSON_CAMERA_LAG: float = 4.0  # How fast camera catches up (lower = more lag)
 const THIRD_PERSON_HEAD_TURN_SPEED: float = 8.0  # How fast head aims before body follows
 const THIRD_PERSON_BODY_CATCH_UP: float = 2.5  # How fast body catches up to camera
@@ -43,10 +43,6 @@ var third_person_aim_offset: float = 0.0  # How far camera is ahead of body
 # Cached bone indices
 var _head_bone_idx: int = -1
 var _spine_bone_idx: int = -1
-
-# Warning flags (prevent console spam)
-var _warned_skeleton: bool = false
-var _warned_head_bone: bool = false
 
 func _ready() -> void:
 	var errors: Array[String] = []
@@ -169,7 +165,11 @@ func _update_head_rotation() -> void:
 		return
 
 	# Calculate head rotation (compensate for camera-body offset)
-	var head_pitch := -camera_x_rotation  # Negate for character model orientation
+	# Camera looks along -Z in head local space (after -90° Y rotation)
+	# Head bone points up +Y in skeleton space
+	# Pitch: negate camera_x_rotation for correct up/down direction
+	# Yaw: use freelook_offset directly (positive = turn right, head turns right)
+	var head_pitch := -camera_x_rotation
 	var head_yaw := freelook_offset
 
 	# Apply neck limits

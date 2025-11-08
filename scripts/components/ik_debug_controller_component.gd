@@ -1,0 +1,167 @@
+extends Node
+class_name IKDebugControllerComponent
+
+## Debug controller for manual IK target manipulation
+## Press B to toggle debug mode, then use controls to manipulate IK targets
+## When active, disables normal character input to avoid conflicts
+
+# Movement speed constants
+const MOVEMENT_SPEED: float = 0.02  # Units per frame for horizontal movement
+const VERTICAL_SPEED: float = 0.02  # Units per frame for vertical movement
+
+@export var ik_locomotion: IKLocomotion
+
+# Debug state
+var debug_mode_enabled: bool = false
+var selected_target_index: int = 0  # 0=left_hand, 1=right_hand, 2=left_foot, 3=right_foot
+var target_names: Array[String] = ["Left Hand", "Right Hand", "Left Foot", "Right Foot"]
+
+# Cached reference to input controller (to disable normal input when in debug mode)
+var input_controller: InputControllerComponent = null
+
+func _ready() -> void:
+	# Get IKLocomotion reference from parent if not assigned
+	if not ik_locomotion:
+		var parent = get_parent()
+		if parent:
+			ik_locomotion = parent.get_node_or_null("IKLocomotion")
+
+	if not ik_locomotion:
+		push_error("IKDebugController: IKLocomotion not found!")
+		return
+
+	# Cache input controller reference
+	input_controller = get_parent().get_node_or_null("InputController")
+
+	print("IKDebugController: Ready (Press B to toggle)")
+
+func _input(event: InputEvent) -> void:
+	# Only process input when debug mode is enabled
+	if not debug_mode_enabled:
+		return
+
+	# Handle key input for target selection
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_F1:
+				_select_target(0)
+				get_viewport().set_input_as_handled()
+			KEY_F2:
+				_select_target(1)
+				get_viewport().set_input_as_handled()
+			KEY_F3:
+				_select_target(2)
+				get_viewport().set_input_as_handled()
+			KEY_F4:
+				_select_target(3)
+				get_viewport().set_input_as_handled()
+
+func _process(_delta: float) -> void:
+	# Only process when debug mode is enabled
+	if not debug_mode_enabled:
+		return
+
+	# Read movement input
+	var movement_input := Vector3.ZERO
+
+	# Horizontal movement (Arrow Keys)
+	if Input.is_key_pressed(KEY_LEFT):
+		movement_input.x -= MOVEMENT_SPEED
+	if Input.is_key_pressed(KEY_RIGHT):
+		movement_input.x += MOVEMENT_SPEED
+	if Input.is_key_pressed(KEY_UP):
+		movement_input.z -= MOVEMENT_SPEED
+	if Input.is_key_pressed(KEY_DOWN):
+		movement_input.z += MOVEMENT_SPEED
+
+	# Vertical movement (Page Up/Down)
+	if Input.is_key_pressed(KEY_PAGEUP):
+		movement_input.y += VERTICAL_SPEED
+	if Input.is_key_pressed(KEY_PAGEDOWN):
+		movement_input.y -= VERTICAL_SPEED
+
+	# Apply movement to selected target
+	if movement_input != Vector3.ZERO:
+		_move_selected_target(movement_input)
+
+## Toggle IK debug mode on/off
+func toggle_debug_mode() -> void:
+	debug_mode_enabled = not debug_mode_enabled
+
+	if debug_mode_enabled:
+		# Disable normal input to avoid conflicts
+		if input_controller:
+			input_controller.disable_input()
+
+		print("\n=== IK DEBUG MODE ENABLED ===")
+		print("Controls:")
+		print("  F1-F4: Select target (F1=LHand, F2=RHand, F3=LFoot, F4=RFoot)")
+		print("  Arrow Keys: Move target horizontally")
+		print("  Page Up/Down: Move target vertically")
+		print("  B: Exit debug mode")
+		print("Selected: ", target_names[selected_target_index])
+		print("=============================\n")
+	else:
+		# Re-enable normal input
+		if input_controller:
+			input_controller.enable_input()
+
+		print("\n=== IK DEBUG MODE DISABLED ===\n")
+
+## Select which IK target to control
+func _select_target(index: int) -> void:
+	if index < 0 or index >= target_names.size():
+		return
+
+	selected_target_index = index
+	print("Selected target: ", target_names[selected_target_index])
+
+## Move the currently selected IK target
+func _move_selected_target(offset: Vector3) -> void:
+	if not ik_locomotion:
+		return
+
+	var target: Node3D = null
+
+	match selected_target_index:
+		0:  # Left hand
+			target = ik_locomotion.left_hand_target
+		1:  # Right hand
+			target = ik_locomotion.right_hand_target
+		2:  # Left foot
+			target = ik_locomotion.left_foot_target
+		3:  # Right foot
+			target = ik_locomotion.right_foot_target
+
+	if target:
+		# Apply movement relative to character's facing direction
+		var character_body := get_parent() as CharacterBody3D
+		if character_body:
+			var rotated_offset := character_body.global_transform.basis * offset
+			target.global_position += rotated_offset
+
+## Get current target info for display
+func get_selected_target_info() -> String:
+	if not debug_mode_enabled:
+		return ""
+
+	var target: Node3D = null
+	match selected_target_index:
+		0:
+			target = ik_locomotion.left_hand_target
+		1:
+			target = ik_locomotion.right_hand_target
+		2:
+			target = ik_locomotion.left_foot_target
+		3:
+			target = ik_locomotion.right_foot_target
+
+	if target:
+		return "Target: %s | Pos: (%.2f, %.2f, %.2f)" % [
+			target_names[selected_target_index],
+			target.global_position.x,
+			target.global_position.y,
+			target.global_position.z
+		]
+
+	return "No target"

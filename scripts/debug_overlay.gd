@@ -8,7 +8,7 @@ class_name DebugOverlay
 @onready var performance_text: RichTextLabel = $PerformancePanel/MarginContainer/PerformanceText
 @onready var ik_visualization: Node3D = null
 
-var player: SkeletonFPPController
+var player: CharacterControllerMain
 var debug_visible: bool = false
 var show_ik_debug: bool = false
 
@@ -49,31 +49,47 @@ func _update_debug_text():
 	# Player state
 	text += "[b][color=yellow]PLAYER STATE[/color][/b]\n"
 	text += "Position: %v\n" % player.global_position
-	text += "Velocity: %v (%.2f m/s)\n" % [player.velocity, player.velocity.length()]
+
+	if player.movement_controller:
+		var velocity = player.movement_controller.get_velocity()
+		text += "Velocity: %v (%.2f m/s)\n" % [velocity, velocity.length()]
+		text += "Stance: %s\n" % _stance_to_string(player.movement_controller.get_stance())
+		text += "Sprinting: %s\n" % player.movement_controller.get_is_sprinting()
+
 	text += "On Floor: %s\n" % player.is_on_floor()
-	text += "Stance: %s\n" % _stance_to_string(player.stance)
-	text += "Sprinting: %s\n" % player.is_sprinting
 	text += "\n"
 
 	# Camera & Look
 	text += "[b][color=yellow]CAMERA & LOOK[/color][/b]\n"
-	text += "Camera Pitch: %.1f°\n" % rad_to_deg(player.camera_x_rotation)
-	text += "Camera Yaw: %.1f°\n" % rad_to_deg(player.camera_y_rotation)
-	text += "Body Yaw: %.1f°\n" % rad_to_deg(player.body_y_rotation)
-	text += "Freelooking: %s\n" % player.is_freelooking
-	if player.is_freelooking:
-		text += "Freelook Offset: %.1f° / %.1f°\n" % [
-			rad_to_deg(abs(player.freelook_offset)),
-			player.freelook_max_angle
-		]
+
+	if player.camera_controller:
+		var cam_rot = player.camera_controller.get_camera_rotation()
+		text += "Camera Pitch: %.1f°\n" % rad_to_deg(cam_rot.x)
+		text += "Camera Yaw: %.1f°\n" % rad_to_deg(cam_rot.y)
+		text += "Body Yaw: %.1f°\n" % rad_to_deg(player.camera_controller.get_body_rotation())
+		text += "Freelooking: %s\n" % player.camera_controller.is_freelooking
+
+		if player.camera_controller.is_freelooking:
+			var max_angle = player.config.neck_max_yaw if player.config else 90.0
+			text += "Freelook Offset: %.1f° / %.1f°\n" % [
+				rad_to_deg(abs(player.camera_controller.get_freelook_offset())),
+				max_angle
+			]
+
 	text += "\n"
 
 	# ADS
 	text += "[b][color=yellow]ADS SYSTEM[/color][/b]\n"
-	text += "Aiming: %s\n" % player.is_aiming
-	text += "ADS Blend: %.2f\n" % player.ads_blend
-	if player.camera:
-		text += "Current FOV: %.1f°\n" % player.camera.fov
+
+	if player.movement_controller:
+		text += "Aiming: %s\n" % player.movement_controller.get_is_aiming()
+
+	if player.camera_controller:
+		text += "ADS Blend: %.2f\n" % player.camera_controller.ads_blend
+
+	if player.fps_camera:
+		text += "Current FOV: %.1f°\n" % player.fps_camera.fov
+
 	text += "\n"
 
 	# Weapon
@@ -94,15 +110,23 @@ func _update_debug_text():
 
 	# IK System
 	text += "[b][color=yellow]IK SYSTEM[/color][/b]\n"
-	text += "IK Enabled: %s\n" % player.enable_ik
+
+	if player.ik_locomotion:
+		text += "IK Enabled: %s\n" % player.ik_locomotion.ik_mode_enabled
+
 	if player.skeleton:
 		text += "Skeleton Bones: %d\n" % player.skeleton.get_bone_count()
-		text += "Head Bone: %s (#%d)\n" % [player.head_bone_name, player.head_bone_idx]
-		text += "Spine Bone: %s (#%d)\n" % [player.spine_bone_name, player.spine_bone_idx]
+
+	if player.bone_config:
+		text += "Head Bone: %s\n" % player.bone_config.head
+		text += "Spine Bone: %s\n" % player.bone_config.spine
+
 	if player.right_hand_ik:
 		text += "Right Hand IK: Active\n"
+
 	if player.left_hand_ik:
 		text += "Left Hand IK: Active\n"
+
 	text += "\n"
 
 	# Controls reminder
@@ -153,11 +177,11 @@ func _draw_ik_debug():
 
 func _stance_to_string(stance) -> String:
 	match stance:
-		SkeletonFPPController.Stance.STANDING:
+		MovementControllerComponent.Stance.STANDING:
 			return "Standing"
-		SkeletonFPPController.Stance.CROUCHING:
+		MovementControllerComponent.Stance.CROUCHING:
 			return "Crouching"
-		SkeletonFPPController.Stance.PRONE:
+		MovementControllerComponent.Stance.PRONE:
 			return "Prone"
 	return "Unknown"
 

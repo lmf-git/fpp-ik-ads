@@ -83,7 +83,7 @@ func _create_ik_targets() -> void:
 
 	print("WeaponController: Created IK targets")
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if current_weapon:
 		_update_weapon_ik()
 		_apply_procedural_offsets()
@@ -103,14 +103,25 @@ func pickup_weapon(pickup: WeaponPickup) -> void:
 
 ## Called by state machine during SWITCHING phase
 func perform_weapon_switch(pickup: WeaponPickup, old_weapon: Weapon) -> void:
+	print("\n=== WEAPON SWITCH DEBUG ===")
+	print("Pickup: ", pickup)
+	print("Pickup weapon_scene: ", pickup.weapon_scene if pickup else null)
+	print("Old weapon: ", old_weapon)
+	print("right_hand_attachment: ", right_hand_attachment)
+
 	# Drop old weapon
 	if old_weapon:
 		_drop_weapon(old_weapon)
 
 	# Instantiate new weapon
 	if pickup and pickup.weapon_scene:
+		print("Instantiating weapon from scene...")
 		var new_weapon = pickup.weapon_scene.instantiate() as Weapon
+		print("New weapon instance: ", new_weapon)
+		print("New weapon type: ", new_weapon.get_class() if new_weapon else "null")
+
 		if new_weapon and right_hand_attachment:
+			print("Adding weapon to right hand attachment...")
 			right_hand_attachment.add_child(new_weapon)
 			new_weapon.position = Vector3.ZERO
 			new_weapon.rotation = Vector3.ZERO
@@ -121,9 +132,49 @@ func perform_weapon_switch(pickup: WeaponPickup, old_weapon: Weapon) -> void:
 
 			weapon_changed.emit(new_weapon, old_weapon)
 			print("WeaponController: Equipped ", new_weapon.weapon_name)
+			print("Weapon global position: ", new_weapon.global_position)
+			print("Weapon visible: ", new_weapon.visible)
+		else:
+			print("ERROR: Failed to equip weapon!")
+			print("  new_weapon is null: ", new_weapon == null)
+			print("  right_hand_attachment is null: ", right_hand_attachment == null)
 
 		# Remove pickup from world
+		print("Removing pickup from world...")
 		pickup.queue_free()
+	else:
+		print("ERROR: pickup or pickup.weapon_scene is null!")
+	print("=== END WEAPON SWITCH DEBUG ===\n")
+
+## Detach weapon from character without dropping it (for hotswapping between slots)
+func _detach_weapon(weapon: Weapon) -> void:
+	if not weapon:
+		return
+
+	# Remove from hand attachment but don't destroy
+	if weapon.get_parent():
+		weapon.get_parent().remove_child(weapon)
+
+	# Disable weapon IK while detached
+	if right_hand_ik:
+		right_hand_ik.stop()
+	if left_hand_ik:
+		left_hand_ik.stop()
+
+## Attach weapon to character hand (for hotswapping between slots)
+func _attach_weapon(weapon: Weapon) -> void:
+	if not weapon or not right_hand_attachment:
+		return
+
+	# Add to hand attachment
+	right_hand_attachment.add_child(weapon)
+	weapon.position = Vector3.ZERO
+	weapon.rotation = Vector3.ZERO
+
+	# Setup IK for this weapon
+	_setup_weapon_ik(weapon)
+
+	print("WeaponController: Attached ", weapon.weapon_name)
 
 func _drop_weapon(weapon: Weapon) -> void:
 	if not weapon:
@@ -165,18 +216,28 @@ func _setup_weapon_ik(weapon: Weapon) -> void:
 		print("WeaponController: Left hand IK configured")
 
 func _update_weapon_ik() -> void:
-	if not current_weapon:
+	if not current_weapon or not fps_camera:
 		return
 
-	var grip_point = current_weapon.get_node_or_null("GripPoint")
+	# Position hands in front of camera for aiming pose
+	# Right hand: dominant hand holds weapon grip
+	if right_hand_ik_target:
+		# Position right hand in front of camera (weapon will follow via BoneAttachment)
+		var camera_forward := -fps_camera.global_transform.basis.z
+		var camera_right := fps_camera.global_transform.basis.x
+		var camera_down := -fps_camera.global_transform.basis.y
+
+		# Right hand position: slightly right, slightly down, in front of camera
+		var right_hand_offset := camera_right * 0.15 + camera_down * 0.1 + camera_forward * 0.3
+		right_hand_ik_target.global_position = fps_camera.global_position + right_hand_offset
+
+		# Orient hand to point forward
+		right_hand_ik_target.global_transform.basis = fps_camera.global_transform.basis
+
+	# Left hand: support hand positions based on weapon's support point
 	var support_point = current_weapon.get_node_or_null("SupportPoint")
-
-	# Update right hand target (grip)
-	if right_hand_ik_target and grip_point:
-		right_hand_ik_target.global_transform = grip_point.global_transform
-
-	# Update left hand target (support)
 	if left_hand_ik_target and support_point:
+		# Left hand follows weapon's support point
 		left_hand_ik_target.global_transform = support_point.global_transform
 
 func _apply_procedural_offsets() -> void:
@@ -210,16 +271,15 @@ func update_ads(delta: float, is_aiming: bool) -> void:
 
 	# Position weapon so ADS target aligns with camera center
 	var camera_pos := fps_camera.global_position
-	var camera_forward := -fps_camera.global_transform.basis.z
 
 	# Calculate where weapon should be
 	var weapon_root := current_weapon.get_parent() as Node3D
 	if weapon_root:
 		# Offset from weapon root to ADS target in local space
-		var ads_offset_local := current_weapon.transform * ads_target_node.transform
+		var ads_offset_local: Transform3D = current_weapon.transform * ads_target_node.transform
 
 		# Target position: align ADS point with camera
-		var target_weapon_pos := camera_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
+		var target_weapon_pos: Vector3 = camera_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
 
 		# Blend position smoothly
 		weapon_root.global_position = weapon_root.global_position.lerp(target_weapon_pos, ads_blend)
@@ -229,7 +289,7 @@ func fire_weapon() -> void:
 	if not current_weapon:
 		return
 
-	if current_weapon.has_method("can_fire") and current_weapon.can_fire():
+	if "can_fire" in current_weapon and current_weapon.can_fire:
 		if current_weapon.has_method("fire"):
 			current_weapon.fire()
 			weapon_fired.emit(current_weapon)
@@ -243,7 +303,7 @@ func reload_weapon() -> void:
 	if not current_weapon:
 		return
 
-	if current_weapon.has_method("is_reloading") and not current_weapon.is_reloading():
+	if "is_reloading" in current_weapon and not current_weapon.is_reloading:
 		if current_weapon.has_method("reload"):
 			current_weapon.reload()
 
@@ -252,13 +312,33 @@ func switch_to_slot(slot: int) -> void:
 	if slot == current_weapon_slot:
 		return  # Already equipped
 
-	if slot < 0 or slot >= holstered_weapons.size():
+	# Ensure holstered_weapons array is large enough
+	while holstered_weapons.size() <= slot:
+		holstered_weapons.append(null)
+
+	# Check if there's a weapon in this slot
+	var target_weapon := holstered_weapons[slot]
+	if not target_weapon:
 		print("WeaponController: No weapon in slot ", slot)
 		return
 
-	# TODO: Implement weapon swap between holstered weapons
+	# Don't swap if already in progress
+	if weapon_swap_state_machine and weapon_swap_state_machine.is_swapping():
+		print("WeaponController: Cannot switch during weapon swap")
+		return
+
+	# Swap: put current weapon in old slot, equip target weapon
+	if current_weapon:
+		holstered_weapons[current_weapon_slot] = current_weapon
+		_detach_weapon(current_weapon)
+
+	holstered_weapons[slot] = null
 	current_weapon_slot = slot
-	print("WeaponController: Switching to slot ", slot)
+	current_weapon = target_weapon
+	_attach_weapon(current_weapon)
+
+	weapon_changed.emit(current_weapon)
+	print("WeaponController: Switched to ", target_weapon.weapon_name, " in slot ", slot)
 
 ## Get current weapon for external systems
 func get_current_weapon() -> Weapon:

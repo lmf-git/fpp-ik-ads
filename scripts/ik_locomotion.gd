@@ -57,8 +57,17 @@ var get_up_time: float = 0.0
 var get_up_duration: float = 1.5
 
 func _ready():
+	# Get references from parent if not already assigned
 	if not skeleton:
-		print("IKLocomotion: No skeleton assigned!")
+		var parent = get_parent()
+		if parent:
+			skeleton = parent.get_node_or_null("CharacterModel/RootNode/Skeleton3D")
+
+	if not character_body:
+		character_body = get_parent() as CharacterBody3D
+
+	if not skeleton:
+		push_error("IKLocomotion: No skeleton found!")
 		return
 
 	_cache_bone_indices()

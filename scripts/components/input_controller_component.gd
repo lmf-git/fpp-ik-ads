@@ -30,6 +30,7 @@ signal freelook_stopped()
 # System
 signal camera_mode_toggle_requested()
 signal ik_mode_toggle_requested()
+signal ik_debug_toggle_requested()
 signal hud_toggle_requested()
 signal debug_toggle_requested()
 
@@ -145,6 +146,8 @@ func _handle_key_input(keycode: int) -> void:
 			camera_mode_toggle_requested.emit()
 		KEY_M:
 			ik_mode_toggle_requested.emit()
+		KEY_B:
+			ik_debug_toggle_requested.emit()
 		KEY_4:
 			hud_toggle_requested.emit()
 		KEY_5:

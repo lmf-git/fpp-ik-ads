@@ -5,6 +5,7 @@ class_name WeaponSwapStateMachine
 ## Manages weapon swap animation phases cleanly
 
 signal swap_started()
+@warning_ignore("unused_signal")  # Emitted from RaisingSwapState inner class (line 165)
 signal swap_completed()
 
 @export var swap_speed: float = 3.0
@@ -45,6 +46,7 @@ func _process(delta: float) -> void:
 ## Register a state
 func register_state(state_name: StringName, state: WeaponSwapState) -> void:
 	states[state_name] = state
+	state.name = state_name  # Set node name to match state identifier
 	state.state_machine = self
 	state.weapon_controller = weapon_controller
 	state.state_finished.connect(_on_state_finished)

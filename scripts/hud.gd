@@ -13,7 +13,7 @@ class_name HUD
 @onready var health_bar: ProgressBar = $HealthBar
 @onready var control_hints: VBoxContainer = $ControlHints
 
-var player: SkeletonFPPController
+var player: CharacterControllerMain
 
 func _ready():
 	# Find player
@@ -71,43 +71,55 @@ func _update_weapon_info():
 		weapon_label.text = "No Weapon"
 
 func _update_stance_info():
-	match player.stance:
-		SkeletonFPPController.Stance.STANDING:
+	if not player.movement_controller:
+		return
+
+	match player.movement_controller.get_stance():
+		MovementControllerComponent.Stance.STANDING:
 			stance_label.text = "Standing"
-		SkeletonFPPController.Stance.CROUCHING:
+		MovementControllerComponent.Stance.CROUCHING:
 			stance_label.text = "Crouching"
-		SkeletonFPPController.Stance.PRONE:
+		MovementControllerComponent.Stance.PRONE:
 			stance_label.text = "Prone"
 
 func _update_freelook_indicator():
-	if player.is_freelooking:
+	if not player.camera_controller:
+		return
+
+	if player.camera_controller.is_freelooking:
 		freelook_indicator.visible = true
-		var offset_deg = rad_to_deg(player.freelook_offset)
+		var offset_deg = rad_to_deg(player.camera_controller.get_freelook_offset())
 		freelook_indicator.text = "FREELOOK [%d°]" % abs(offset_deg)
 
 		# Color based on offset
-		var max_angle = player.freelook_max_angle
-		var ratio = abs(player.freelook_offset) / deg_to_rad(max_angle)
+		var max_angle = player.config.neck_max_yaw if player.config else 90.0
+		var ratio = abs(player.camera_controller.get_freelook_offset()) / deg_to_rad(max_angle)
 		freelook_indicator.add_theme_color_override("font_color",
 			Color.GREEN.lerp(Color.RED, ratio))
 	else:
 		freelook_indicator.visible = false
 
 func _update_ads_indicator():
-	ads_indicator.visible = player.is_aiming
+	if not player.movement_controller or not player.camera_controller:
+		return
+
+	ads_indicator.visible = player.movement_controller.get_is_aiming()
 
 	# Scale crosshair with ADS
-	var scale_factor = lerp(1.0, 0.5, player.ads_blend)
+	var scale_factor = lerp(1.0, 0.5, player.camera_controller.ads_blend)
 	crosshair.scale = Vector2.ONE * scale_factor
 
 func _update_crosshair():
+	if not player.movement_controller:
+		return
+
 	# Hide crosshair when no weapon
 	crosshair.visible = player.current_weapon != null
 
 	# Change crosshair color based on state
-	if player.is_aiming:
+	if player.movement_controller.get_is_aiming():
 		crosshair.modulate = Color.GREEN
-	elif player.is_sprinting:
+	elif player.movement_controller.get_is_sprinting():
 		crosshair.modulate = Color.ORANGE
 	else:
 		crosshair.modulate = Color.WHITE

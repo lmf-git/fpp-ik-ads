@@ -8,7 +8,7 @@ class_name CharacterControllerMain
 # ===== SIGNALS - Event-driven communication (like Outer Wilds) =====
 signal weapon_changed(weapon: Weapon)
 signal stance_changed(old_stance: int, new_stance: int)
-signal interaction_available(interactable: Node)
+signal interaction_available(prompt: String)
 signal interaction_unavailable()
 signal damage_taken(amount: float, limb: StringName)
 
@@ -20,9 +20,10 @@ signal damage_taken(amount: float, limb: StringName)
 @onready var input_controller: InputControllerComponent = $InputController
 @onready var camera_controller: CameraControllerComponent = $CameraController
 @onready var movement_controller: MovementControllerComponent = $MovementController
-@onready var ragdoll_controller: RagdollControllerRefactored = $RagdollController
+@onready var ragdoll_controller: RagdollController = $RagdollController
 @onready var weapon_controller: WeaponControllerComponent = $WeaponController
 @onready var ik_locomotion: IKLocomotion = $IKLocomotion
+@onready var ik_debug_controller: IKDebugControllerComponent = $IKDebugController
 
 # ===== SCENE REFERENCES - Using unique names (%) for reliability =====
 @onready var skeleton: Skeleton3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D")
@@ -62,6 +63,7 @@ func _connect_signals() -> void:
 	if input_controller:
 		input_controller.interact_requested.connect(_on_interact_requested)
 		input_controller.ik_mode_toggle_requested.connect(_on_ik_mode_toggle)
+		input_controller.ik_debug_toggle_requested.connect(_on_ik_debug_toggle)
 		input_controller.weapon_switch_requested.connect(_on_weapon_switch_requested)
 		input_controller.ragdoll_toggle_requested.connect(_on_ragdoll_toggle)
 		input_controller.ragdoll_impulse_requested.connect(_on_ragdoll_impulse)
@@ -73,6 +75,7 @@ func _connect_signals() -> void:
 	if movement_controller:
 		movement_controller.stance_changed.connect(_on_stance_changed)
 		movement_controller.jumped.connect(_on_jumped)
+		movement_controller.prone_state_changed.connect(_on_prone_state_changed)
 
 	# Camera signals
 	if camera_controller:
@@ -109,6 +112,9 @@ func _initialize_components() -> void:
 		ik_locomotion.skeleton = skeleton
 		ik_locomotion.character_body = self
 
+	if ik_debug_controller:
+		ik_debug_controller.ik_locomotion = ik_locomotion
+
 	# Start idle animation
 	if animation_player and animation_player.has_animation("www_characters3d_com | Idle"):
 		animation_player.play("www_characters3d_com | Idle")
@@ -134,26 +140,80 @@ func _process(delta: float) -> void:
 
 ## ===== INTERACTION SYSTEM (like GTA's prompt system) =====
 
+var current_interactable: Node = null  # Track what we're currently looking at
+
 func _check_interactions() -> void:
 	if not interaction_ray or not interaction_ray.is_colliding():
+		# Clear current interactable
+		if current_interactable and current_interactable.has_method("set_in_range"):
+			current_interactable.set_in_range(false)
+		current_interactable = null
 		interaction_unavailable.emit()
 		return
 
 	var collider := interaction_ray.get_collider()
 	if collider and collider.is_in_group("interactable"):
-		interaction_available.emit(collider)
+		# Notify new interactable
+		if collider != current_interactable:
+			# Clear previous
+			if current_interactable and current_interactable.has_method("set_in_range"):
+				current_interactable.set_in_range(false)
+			# Set new
+			current_interactable = collider
+			if current_interactable.has_method("set_in_range"):
+				current_interactable.set_in_range(true)
+
+		# Extract interaction prompt from the interactable object
+		var prompt: String = _get_interaction_prompt(collider)
+		interaction_available.emit(prompt)
 	else:
+		# Clear current interactable
+		if current_interactable and current_interactable.has_method("set_in_range"):
+			current_interactable.set_in_range(false)
+		current_interactable = null
 		interaction_unavailable.emit()
 
+## Get interaction prompt text from an interactable object
+func _get_interaction_prompt(interactable: Node) -> String:
+	# Check if it's a weapon pickup
+	if interactable is WeaponPickup:
+		return "[E] Pick up %s" % interactable.weapon_name
+
+	# Generic fallback
+	return "[E] Interact"
+
 func _try_interact() -> void:
-	if not interaction_ray or not interaction_ray.is_colliding():
+	print("\n=== INTERACTION DEBUG ===")
+	print("Interact requested!")
+
+	if not interaction_ray:
+		print("ERROR: No interaction ray!")
+		return
+
+	print("InteractionRay enabled: ", interaction_ray.enabled)
+	print("InteractionRay position: ", interaction_ray.global_position)
+	print("InteractionRay target: ", interaction_ray.target_position)
+	print("InteractionRay is_colliding: ", interaction_ray.is_colliding())
+
+	if not interaction_ray.is_colliding():
+		print("InteractionRay not colliding with anything")
+		print("InteractionRay collision_mask: ", interaction_ray.collision_mask)
 		return
 
 	var collider := interaction_ray.get_collider()
+	print("InteractionRay hit: ", collider)
+	print("Collider type: ", collider.get_class())
+	print("Collider groups: ", collider.get_groups())
+	print("Is in 'interactable' group: ", collider.is_in_group("interactable"))
+	print("Is WeaponPickup type: ", collider is WeaponPickup)
 
 	# Handle weapon pickups
 	if collider is WeaponPickup:
+		print("SUCCESS: Collider is WeaponPickup - attempting pickup")
 		_pickup_weapon(collider)
+	else:
+		print("FAIL: Collider is NOT WeaponPickup")
+	print("=== END DEBUG ===\n")
 
 func _pickup_weapon(pickup: WeaponPickup) -> void:
 	if weapon_controller:
@@ -208,6 +268,10 @@ func _on_interact_requested() -> void:
 func _on_ik_mode_toggle() -> void:
 	_toggle_ik_mode()
 
+func _on_ik_debug_toggle() -> void:
+	if ik_debug_controller:
+		ik_debug_controller.toggle_debug_mode()
+
 func _on_weapon_switch_requested(slot: int) -> void:
 	if weapon_controller:
 		weapon_controller.switch_to_slot(slot)
@@ -253,7 +317,20 @@ func _on_ragdoll_disabled() -> void:
 	if movement_controller:
 		movement_controller.process_mode = Node.PROCESS_MODE_INHERIT
 
-func _on_weapon_changed(new_weapon: Weapon, old_weapon: Weapon) -> void:
+	# MGSV-style: Play procedural get-up animation from ragdoll
+	if ik_locomotion and ik_mode_enabled:
+		ik_locomotion.play_get_up_animation()
+		print("Character: Getting up from ragdoll")
+
+func _on_prone_state_changed(is_supine: bool) -> void:
+	# Update IK for prone-back (supine) vs prone-stomach transitions
+	if is_supine:
+		print("Character: Prone state -> SUPINE (on back)")
+	else:
+		print("Character: Prone state -> STOMACH")
+	# IK system will handle the transition automatically based on stance
+
+func _on_weapon_changed(new_weapon: Weapon, _old_weapon: Weapon) -> void:
 	# Update current weapon reference
 	current_weapon = new_weapon
 	weapon_changed.emit(new_weapon)
