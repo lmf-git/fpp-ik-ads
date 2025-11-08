@@ -8,8 +8,8 @@ signal ragdoll_enabled()
 signal ragdoll_disabled()
 
 @export var bone_config: BoneConfig
-@export var collision_layer: int = 1
-@export var collision_mask: int = 1
+@export var collision_layer: int = 2  # Ragdoll on layer 2
+@export var collision_mask: int = 1   # Only collide with environment (layer 1)
 
 @onready var skeleton: Skeleton3D = get_node_or_null("../CharacterModel/RootNode/Skeleton3D")
 @onready var character_body: CharacterBody3D = get_parent()
@@ -284,9 +284,14 @@ func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
 	skeleton.physical_bones_start_simulation()
 
 	# Enable collision on all bones
+	# Layer 2 = ragdoll bones, Mask 1 = environment only (no self-collision)
 	for bone in physical_bones:
 		bone.collision_layer = collision_layer
 		bone.collision_mask = collision_mask
+		# Explicitly disable self-collision between physical bones
+		for other_bone in physical_bones:
+			if bone != other_bone:
+				bone.add_collision_exception_with(other_bone)
 
 	# Apply impulse if specified
 	if impulse.length() > 0:

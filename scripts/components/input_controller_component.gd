@@ -129,6 +129,12 @@ func _process(_delta: float) -> void:
 		reload_requested.emit()
 
 func _handle_key_input(keycode: int) -> void:
+	# IK mode toggle (7 key)
+	if keycode == KEY_7:
+		ik_mode_toggle_requested.emit()
+		return
+
+	# Continue with other key handling
 	match keycode:
 		# Weapon switching
 		KEY_1:
