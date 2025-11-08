@@ -8,7 +8,7 @@ class_name CharacterControllerMain
 # ===== SIGNALS - Event-driven communication (like Outer Wilds) =====
 signal weapon_changed(weapon: Weapon)
 signal stance_changed(old_stance: int, new_stance: int)
-signal interaction_available(interactable: Node)
+signal interaction_available(prompt_text: String)
 signal interaction_unavailable()
 signal damage_taken(amount: float, limb: StringName)
 
@@ -144,7 +144,11 @@ func _check_interactions() -> void:
 
 	var collider := interaction_ray.get_collider()
 	if collider and collider.is_in_group("interactable"):
-		interaction_available.emit(collider)
+		# Extract weapon name from WeaponPickup
+		var prompt_text := "Interact"
+		if collider is WeaponPickup:
+			prompt_text = collider.weapon_name
+		interaction_available.emit(prompt_text)
 	else:
 		interaction_unavailable.emit()
 

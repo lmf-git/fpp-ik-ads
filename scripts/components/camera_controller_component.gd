@@ -219,8 +219,8 @@ func _update_camera_mode() -> void:
 			fps_camera.current = true
 
 		# In FPS mode, camera handles pitch only
-		# Character model's 180° rotation requires compensating yaw and roll
-		fps_camera.rotation = Vector3(camera_x_rotation, PI/2, PI)
+		# Character model's 180° Y rotation requires -90° yaw compensation to face forward
+		fps_camera.rotation = Vector3(camera_x_rotation, -PI/2, 0)
 
 ## Update ADS (Aim Down Sights) FOV
 func update_ads(delta: float, is_aiming: bool) -> void:
