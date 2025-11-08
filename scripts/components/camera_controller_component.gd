@@ -218,9 +218,9 @@ func _update_camera_mode() -> void:
 			third_person_camera.current = false
 			fps_camera.current = true
 
-		# In FPS mode, camera handles pitch, 180° Y to compensate for model rotation
-		# Character model is rotated 180° so camera needs to face forward
-		fps_camera.rotation = Vector3(camera_x_rotation, PI, 0)
+		# In FPS mode, camera handles pitch only
+		# Character model's 180° rotation is inherited through bone attachment
+		fps_camera.rotation = Vector3(camera_x_rotation, 0, 0)
 
 ## Update ADS (Aim Down Sights) FOV
 func update_ads(delta: float, is_aiming: bool) -> void:
