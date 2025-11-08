@@ -275,7 +275,8 @@ func _configure_joint(physical_bone: PhysicalBone3D, bone_name: StringName) -> v
 			physical_bone.set("joint_constraints/angular_limit_%s/lower_limit" % axis, deg_to_rad(limits[1]))
 			physical_bone.set("joint_constraints/angular_limit_%s/softness" % axis, soft)
 			physical_bone.set("joint_constraints/angular_limit_%s/restitution" % axis, 0.0)
-			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 15.0 if "arm" in String(config_key) or "leg" in String(config_key) else 12.0)
+			# Set damping to 0.0 to prevent spring-back to rest pose
+			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 0.0)
 
 func _set_linear_limits(physical_bone: PhysicalBone3D, limit: float) -> void:
 	# Only enable linear limits if limit is greater than 0
