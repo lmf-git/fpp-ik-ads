@@ -39,6 +39,9 @@ var current_weapon: Weapon
 var ik_mode_enabled: bool = false
 
 func _ready() -> void:
+	# Add to player group for debug overlay and other systems
+	add_to_group("player")
+
 	_validate_setup()
 	_connect_signals()
 	_initialize_components()

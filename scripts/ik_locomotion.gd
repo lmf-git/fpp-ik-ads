@@ -171,6 +171,36 @@ func disable_ik_mode():
 		left_hand_ik_swing.stop()
 	if right_hand_ik_swing:
 		right_hand_ik_swing.stop()
+
+	# Reset bone poses to rest so they don't interfere with ragdoll/animation
+	if skeleton:
+		# Reset leg bones
+		if left_upperleg_idx >= 0:
+			skeleton.set_bone_pose_position(left_upperleg_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(left_upperleg_idx, Quaternion.IDENTITY)
+		if right_upperleg_idx >= 0:
+			skeleton.set_bone_pose_position(right_upperleg_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(right_upperleg_idx, Quaternion.IDENTITY)
+		if left_foot_idx >= 0:
+			skeleton.set_bone_pose_position(left_foot_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(left_foot_idx, Quaternion.IDENTITY)
+		if right_foot_idx >= 0:
+			skeleton.set_bone_pose_position(right_foot_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(right_foot_idx, Quaternion.IDENTITY)
+		# Reset arm bones
+		if left_upperarm_idx >= 0:
+			skeleton.set_bone_pose_position(left_upperarm_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(left_upperarm_idx, Quaternion.IDENTITY)
+		if right_upperarm_idx >= 0:
+			skeleton.set_bone_pose_position(right_upperarm_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(right_upperarm_idx, Quaternion.IDENTITY)
+		if left_hand_idx >= 0:
+			skeleton.set_bone_pose_position(left_hand_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(left_hand_idx, Quaternion.IDENTITY)
+		if right_hand_idx >= 0:
+			skeleton.set_bone_pose_position(right_hand_idx, Vector3.ZERO)
+			skeleton.set_bone_pose_rotation(right_hand_idx, Quaternion.IDENTITY)
+
 	print("IKLocomotion: IK mode DISABLED")
 
 func update_locomotion(delta: float, velocity: Vector3, is_moving: bool, stance: int):

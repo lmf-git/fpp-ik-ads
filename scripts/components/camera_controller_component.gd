@@ -169,8 +169,9 @@ func _update_head_rotation() -> void:
 		return
 
 	# Always apply head rotation for visual feedback
-	var head_pitch := camera_x_rotation  # Camera pitch directly controls head pitch
-	var head_yaw := freelook_offset  # Only yaw in freelook/third-person
+	# Note: Character model is rotated 180° so bone axes are flipped
+	var head_pitch := -camera_x_rotation  # Inverted for 180° rotated model
+	var head_yaw := -freelook_offset  # Inverted for 180° rotated model
 
 	# In normal FPS mode, no yaw offset (body follows camera)
 	if not is_freelooking and not is_third_person:
@@ -179,8 +180,8 @@ func _update_head_rotation() -> void:
 	# Apply neck limits
 	head_pitch = clampf(
 		head_pitch,
-		deg_to_rad(-config.neck_max_pitch_down),
-		deg_to_rad(config.neck_max_pitch_up)
+		deg_to_rad(-config.neck_max_pitch_up),  # Limits also inverted
+		deg_to_rad(config.neck_max_pitch_down)
 	)
 	head_yaw = clampf(head_yaw, deg_to_rad(-config.neck_max_yaw), deg_to_rad(config.neck_max_yaw))
 
