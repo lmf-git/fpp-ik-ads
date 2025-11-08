@@ -209,9 +209,9 @@ func update_ads(delta: float, is_aiming: bool) -> void:
 	if not ads_target_node:
 		return
 
-	# Position weapon so ADS target aligns with camera center
+	# Position and orient weapon so ADS target aligns with camera center
 	var camera_pos := fps_camera.global_position
-	var _camera_forward := -fps_camera.global_transform.basis.z
+	var camera_basis := fps_camera.global_transform.basis
 
 	# Calculate where weapon should be
 	var weapon_root := current_weapon.get_parent() as Node3D
@@ -220,10 +220,14 @@ func update_ads(delta: float, is_aiming: bool) -> void:
 		var ads_offset_local: Transform3D = current_weapon.transform * ads_target_node.transform
 
 		# Target position: align ADS point with camera
-		var target_weapon_pos: Vector3 = camera_pos - (weapon_root.global_transform.basis * ads_offset_local.origin)
+		var target_weapon_pos: Vector3 = camera_pos - (camera_basis * ads_offset_local.origin)
 
-		# Blend position smoothly
+		# Target rotation: align weapon forward with camera forward
+		var target_weapon_rot := camera_basis
+
+		# Blend position and rotation smoothly
 		weapon_root.global_position = weapon_root.global_position.lerp(target_weapon_pos, ads_blend)
+		weapon_root.global_transform.basis = weapon_root.global_transform.basis.slerp(target_weapon_rot, ads_blend)
 
 ## Fire current weapon
 func fire_weapon() -> void:

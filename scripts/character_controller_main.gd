@@ -26,10 +26,10 @@ signal damage_taken(amount: float, limb: StringName)
 
 # ===== SCENE REFERENCES - Using unique names (%) for reliability =====
 @onready var skeleton: Skeleton3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D")
-@onready var fps_camera: Camera3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera")
+@onready var fps_camera: Camera3D = %FPSCamera
 @onready var third_person_camera: Camera3D = get_node_or_null("ThirdPersonCamera")
-@onready var interaction_ray: RayCast3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/HeadAttachment/FPSCamera/InteractionRay")
-@onready var animation_player: AnimationPlayer = get_node_or_null("CharacterModel/AnimationPlayer")
+@onready var interaction_ray: RayCast3D = %InteractionRay
+@onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var right_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandIK")
 @onready var left_hand_ik: SkeletonIK3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/LeftHandIK")
 @onready var right_hand_attachment: Node3D = get_node_or_null("CharacterModel/RootNode/Skeleton3D/RightHandAttachment")
