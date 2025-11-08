@@ -22,89 +22,89 @@ var partial_ragdoll_limbs: Array[StringName] = []
 const JOINT_CONFIGS := {
 	&"head": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 6.0,
-		"angular_damp": 8.0,
-		"linear_limit": 0.001,
+		"linear_damp": 15.0,
+		"angular_damp": 20.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -5], "y": [40, -40], "z": [10, -10]},
 		"softness": {"x": 0.8, "y": 0.8, "z": 0.9}
 	},
 	&"neck": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 8.0,
-		"angular_damp": 10.0,
-		"linear_limit": 0.0005,
+		"linear_damp": 20.0,
+		"angular_damp": 25.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [10, -5], "y": [15, -15], "z": [3, -3]},
 		"softness": {"x": 0.9, "y": 0.9, "z": 0.95}
 	},
 	&"lower_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 2.0,
-		"angular_damp": 3.0,
-		"linear_limit": 0.002,
+		"linear_damp": 8.0,
+		"angular_damp": 10.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [140, 0], "y": [10, -10], "z": [5, -5]},
 		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
 	},
 	&"lower_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 3.0,
-		"angular_damp": 5.0,
-		"linear_limit": 0.005,
+		"linear_damp": 10.0,
+		"angular_damp": 12.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, 0], "y": [5, -5], "z": [5, -5]},
 		"softness": {"x": 0.3, "y": 0.5, "z": 0.5}
 	},
 	&"shoulder": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 5.0,
-		"angular_damp": 8.0,
-		"linear_limit": 0.001,
+		"linear_damp": 15.0,
+		"angular_damp": 20.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [1, -1], "y": [1, -1], "z": [1, -1]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"upper_arm": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 2.0,
-		"angular_damp": 3.0,
-		"linear_limit": 0.003,
+		"linear_damp": 8.0,
+		"angular_damp": 10.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [120, -20], "y": [90, -30], "z": [45, -45]},
 		"softness": {"x": 0.7, "y": 0.7, "z": 0.8}
 	},
 	&"spine": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 10.0,
-		"angular_damp": 12.0,
-		"linear_limit": 0.001,
+		"linear_damp": 25.0,
+		"angular_damp": 30.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [5, -5], "y": [8, -8], "z": [3, -3]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"hips": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 12.0,
-		"angular_damp": 15.0,
-		"linear_limit": 0.01,
+		"linear_damp": 30.0,
+		"angular_damp": 35.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [20, -20], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"upper_leg": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 4.0,
-		"angular_damp": 6.0,
-		"linear_limit": 0.01,
+		"linear_damp": 12.0,
+		"angular_damp": 15.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [70, -20], "y": [25, -25], "z": [15, -15]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"hand": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 4.0,
-		"angular_damp": 5.0,
-		"linear_limit": 0.002,
+		"linear_damp": 10.0,
+		"angular_damp": 12.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [20, -30], "y": [15, -15], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	},
 	&"foot": {
 		"type": PhysicalBone3D.JOINT_TYPE_6DOF,
-		"linear_damp": 5.0,
-		"angular_damp": 6.0,
-		"linear_limit": 0.005,
+		"linear_damp": 12.0,
+		"angular_damp": 15.0,
+		"linear_limit": 0.0,
 		"angular_limits": {"x": [15, -30], "y": [10, -10], "z": [10, -10]},
 		"softness": {"x": 0.0, "y": 0.0, "z": 0.0}
 	}
@@ -254,13 +254,19 @@ func _configure_joint(physical_bone: PhysicalBone3D, bone_name: StringName) -> v
 			physical_bone.set("joint_constraints/angular_limit_%s/lower_limit" % axis, deg_to_rad(limits[1]))
 			physical_bone.set("joint_constraints/angular_limit_%s/softness" % axis, soft)
 			physical_bone.set("joint_constraints/angular_limit_%s/restitution" % axis, 0.0)
-			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 8.0 if "arm" in String(config_key) or "leg" in String(config_key) else 6.0)
+			physical_bone.set("joint_constraints/angular_limit_%s/damping" % axis, 15.0 if "arm" in String(config_key) or "leg" in String(config_key) else 12.0)
 
 func _set_linear_limits(physical_bone: PhysicalBone3D, limit: float) -> void:
-	for axis in ["x", "y", "z"]:
-		physical_bone.set("joint_constraints/linear_limit_%s/enabled" % axis, true)
-		physical_bone.set("joint_constraints/linear_limit_%s/upper_limit" % axis, limit)
-		physical_bone.set("joint_constraints/linear_limit_%s/lower_limit" % axis, -limit)
+	# Only enable linear limits if limit is greater than 0
+	# Zero linear limits can cause jitter
+	if limit > 0.0:
+		for axis in ["x", "y", "z"]:
+			physical_bone.set("joint_constraints/linear_limit_%s/enabled" % axis, true)
+			physical_bone.set("joint_constraints/linear_limit_%s/upper_limit" % axis, limit)
+			physical_bone.set("joint_constraints/linear_limit_%s/lower_limit" % axis, -limit)
+	else:
+		for axis in ["x", "y", "z"]:
+			physical_bone.set("joint_constraints/linear_limit_%s/enabled" % axis, false)
 
 ## Enable full body ragdoll
 func enable_ragdoll(impulse: Vector3 = Vector3.ZERO) -> void:
