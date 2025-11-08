@@ -211,11 +211,17 @@ func _create_shape_for_bone(bone_name: StringName) -> Shape3D:
 		var box := BoxShape3D.new()
 		box.size = Vector3(0.22, 0.18, 0.18) if "hips" in name_lower else Vector3(0.18, 0.25, 0.13)
 		return box
-	else:
-		# Default capsule for limbs - smaller radius to allow arms to cross body
+	elif "leg" in name_lower:
+		# Thinner capsules for legs to allow them to get closer together
 		var capsule := CapsuleShape3D.new()
-		capsule.radius = 0.025  # Reduced from 0.03
-		capsule.height = 0.18   # Slightly shorter
+		capsule.radius = 0.018  # Thinner than arms
+		capsule.height = 0.18
+		return capsule
+	else:
+		# Default capsule for limbs (arms)
+		var capsule := CapsuleShape3D.new()
+		capsule.radius = 0.025
+		capsule.height = 0.18
 		return capsule
 
 func _get_bone_mass(bone_name: StringName) -> float:

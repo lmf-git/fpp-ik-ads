@@ -66,6 +66,8 @@ func get_limb_bones(limb: StringName) -> Array[StringName]:
 			return [l_upper_leg, l_lower_leg, l_foot]
 		&"right_leg":
 			return [r_upper_leg, r_lower_leg, r_foot]
+		&"legs":
+			return [l_upper_leg, l_lower_leg, l_foot, r_upper_leg, r_lower_leg, r_foot]
 		_:
 			push_warning("BoneConfig: Unknown limb '%s'" % limb)
 			return []
